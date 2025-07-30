@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Desenvolvedor - SaaSFY</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="index.html">
+                        <h2><i class="fas fa-rocket"></i> SaaSFY</h2>
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Início</a>
+                    <a href="dashboard-dev.html" class="active">Dashboard</a>
+                    <div class="user-menu">
+                        <div class="dropdown">
+                            <button class="dropdown-btn" id="userDropdown">
+                                <i class="fas fa-code"></i>
+                                <span id="userName">Desenvolvedor</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-content">
+                                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Dashboard do Desenvolvedor</h1>
+                <button class="btn btn-primary" onclick="openAddSaasModal()">
+                    <i class="fas fa-plus"></i> Adicionar SaaS
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalSaas">0</h3>
+                        <p>SaaS Publicados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalViews">0</h3>
+                        <p>Visualizações Totais</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="averageRating">0.0</h3>
+                        <p>Avaliação Média</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My SaaS Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Meus SaaS</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchMySaas" placeholder="Buscar nos meus SaaS...">
+                    </div>
+                </div>
+                
+                <div class="saas-table" id="mySaasTable">
+                    <!-- SaaS table will be loaded here -->
+                </div>
+                
+                <div class="empty-state" id="emptySaas" style="display: none;">
+                    <i class="fas fa-cube fa-3x"></i>
+                    <h3>Nenhum SaaS cadastrado</h3>
+                    <p>Comece adicionando seu primeiro SaaS à plataforma!</p>
+                    <button class="btn btn-primary" onclick="openAddSaasModal()">
+                        <i class="fas fa-plus"></i> Adicionar Primeiro SaaS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit SaaS Modal -->
+    <div class="modal" id="saasModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Adicionar Novo SaaS</h2>
+                <button class="modal-close" onclick="closeSaasModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="saasForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saasName">Nome do SaaS *</label>
+                        <input type="text" id="saasName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="saasCategory">Categoria *</label>
+                        <select id="saasCategory" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="productivity">Produtividade</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="finance">Finanças</option>
+                            <option value="design">Design</option>
+                            <option value="development">Desenvolvimento</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saasUrl">URL do SaaS *</label>
+                    <input type="url" id="saasUrl" placeholder="https://exemplo.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saasDescription">Descrição *</label>
+                    <textarea id="saasDescription" rows="4" placeholder="Descreva seu SaaS..." required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saasIntegration">Tipo de Integração *</label>
+                        <select id="saasIntegration" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="iframe">iFrame</option>
+                            <option value="widget">Widget</option>
+                            <option value="redirect">Redirecionamento</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="saasPlan">Plano Necessário *</label>
+                        <select id="saasPlan" required>
+                            <option value="free">Grátis</option>
+                            <option value="pro">Pro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saasIcon">URL do Ícone</label>
+                    <input type="url" id="saasIcon" placeholder="https://exemplo.com/icon.png">
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeSaasModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar SaaS
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Confirmar Exclusão</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este SaaS? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/dashboard-dev.js"></script>
+</body>
+</html>

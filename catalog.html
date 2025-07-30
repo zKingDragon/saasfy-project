@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - SaaSFY</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="index.html">
+                        <h2><i class="fas fa-rocket"></i> SaaSFY</h2>
+                    </a>
+                </div>
+                <div class="nav-links" id="navLinks">
+                    <a href="index.html">Início</a>
+                    <a href="catalog.html" class="active">Catálogo</a>
+                    <a href="#" onclick="goToRandomSaas()" class="random-btn">
+                        <i class="fas fa-random"></i> SaaS Aleatório
+                    </a>
+                    <div class="auth-buttons" id="authButtons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="login.html?mode=register" class="btn btn-primary">Cadastrar</a>
+                    </div>
+                    <div class="user-menu" id="userMenu" style="display: none;">
+                        <div class="dropdown">
+                            <button class="dropdown-btn" id="userDropdown">
+                                <i class="fas fa-user"></i>
+                                <span id="userName">Usuário</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-content" id="dropdownContent">
+                                <a href="#" id="dashboardLink"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-menu-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Catálogo de SaaS</h1>
+            <p>Explore nossa coleção completa de ferramentas SaaS</p>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-bar">
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar SaaS...">
+                    </div>
+                </div>
+                
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <label>Categoria:</label>
+                        <select id="categoryFilter">
+                            <option value="all">Todas as Categorias</option>
+                            <option value="productivity">Produtividade</option>
+                            <option value="design">Design</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="finance">Finanças</option>
+                            <option value="development">Desenvolvimento</option>
+                            <option value="communication">Comunicação</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Plano:</label>
+                        <select id="planFilter">
+                            <option value="all">Todos os Planos</option>
+                            <option value="free">Grátis</option>
+                            <option value="pro">Premium</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Ordenar por:</label>
+                        <select id="sortFilter">
+                            <option value="name">Nome</option>
+                            <option value="rating">Avaliação</option>
+                            <option value="popular">Popularidade</option>
+                            <option value="newest">Mais Recentes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section">
+        <div class="container">
+            <div class="results-header">
+                <div class="results-count">
+                    <span id="resultsCount">0</span> SaaS encontrados
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid" title="Visualização em Grade">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-btn" data-view="list" title="Visualização em Lista">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="saas-container">
+                <div class="saas-grid" id="saasGrid">
+                    <!-- SaaS cards will be loaded here -->
+                </div>
+                
+                <div class="no-results" id="noResults" style="display: none;">
+                    <i class="fas fa-search fa-3x"></i>
+                    <h3>Nenhum SaaS encontrado</h3>
+                    <p>Tente ajustar os filtros ou termos de busca.</p>
+                    <button class="btn btn-primary" onclick="clearFilters()">Limpar Filtros</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-rocket"></i> SaaSFY</h3>
+                    <p>A plataforma definitiva para descobrir e usar os melhores SaaS do mercado.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html">Início</a></li>
+                        <li><a href="catalog.html">Catálogo</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 SaaSFY. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/catalog.js"></script>
+</body>
+</html>

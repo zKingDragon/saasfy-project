@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaSFY - Descubra os Melhores SaaS</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="index.html">
+                        <h2><i class="fas fa-rocket"></i> SaaSFY</h2>
+                    </a>
+                </div>
+                <div class="nav-links" id="navLinks">
+                    <a href="index.html" class="active">Início</a>
+                    <a href="catalog.html">Catálogo</a>
+                    <a href="#" onclick="goToRandomSaas()" class="random-btn">
+                        <i class="fas fa-random"></i> SaaS Aleatório
+                    </a>
+                    <div class="auth-buttons" id="authButtons">
+                        <a href="login.html" class="btn btn-outline">Login</a>
+                        <a href="login.html?mode=register" class="btn btn-primary">Cadastrar</a>
+                    </div>
+                    <div class="user-menu" id="userMenu" style="display: none;">
+                        <div class="dropdown">
+                            <button class="dropdown-btn" id="userDropdown">
+                                <i class="fas fa-user"></i>
+                                <span id="userName">Usuário</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-content" id="dropdownContent">
+                                <a href="#" id="dashboardLink"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-menu-toggle" id="mobileToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Descubra e Acesse os Melhores SaaS em um Só Lugar</h1>
+                <p>Uma plataforma completa onde você pode encontrar, testar e usar diversos SaaS. Desenvolvedores também podem cadastrar suas soluções e alcançar mais usuários.</p>
+                <div class="hero-buttons">
+                    <a href="catalog.html" class="btn btn-primary btn-large">Explorar Catálogo</a>
+                    <a href="login.html?mode=register&type=developer" class="btn btn-outline btn-large">Sou Desenvolvedor</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-cloud fa-10x"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular SaaS Section -->
+    <section class="popular-saas">
+        <div class="container">
+            <div class="section-header">
+                <h2>SaaS Populares</h2>
+                <p>Os mais acessados e bem avaliados da nossa plataforma</p>
+            </div>
+            <div class="saas-grid" id="popularSaasGrid">
+                <!-- Popular SaaS cards will be loaded here -->
+            </div>
+            <div class="section-footer">
+                <a href="catalog.html" class="btn btn-primary btn-large">
+                    Ver Todos os SaaS <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explore por Categoria</h2>
+                <p>Encontre SaaS específicos para suas necessidades</p>
+            </div>
+            <div class="categories-grid">
+                <a href="catalog.html?category=productivity" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>Produtividade</h3>
+                    <p>Ferramentas para organização e gestão de tarefas</p>
+                </a>
+                <a href="catalog.html?category=design" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Design</h3>
+                    <p>Soluções criativas para designers e artistas</p>
+                </a>
+                <a href="catalog.html?category=marketing" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h3>Marketing</h3>
+                    <p>Automatize e otimize suas campanhas</p>
+                </a>
+                <a href="catalog.html?category=finance" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Finanças</h3>
+                    <p>Controle financeiro e análise de dados</p>
+                </a>
+                <a href="catalog.html?category=development" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>Desenvolvimento</h3>
+                    <p>Ferramentas para desenvolvedores</p>
+                </a>
+                <a href="catalog.html?category=communication" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Comunicação</h3>
+                    <p>Soluções para equipes e colaboração</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">SaaS Disponíveis</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Usuários Ativos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">Avaliação Média</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Suporte</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-rocket"></i> SaaSFY</h3>
+                    <p>A plataforma definitiva para descobrir e usar os melhores SaaS do mercado.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Navegação</h4>
+                    <ul>
+                        <li><a href="index.html">Início</a></li>
+                        <li><a href="catalog.html">Catálogo</a></li>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="#about">Sobre</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Para Desenvolvedores</h4>
+                    <ul>
+                        <li><a href="login.html?mode=register&type=developer">Cadastrar SaaS</a></li>
+                        <li><a href="#">Documentação</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Suporte</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Categorias</h4>
+                    <ul>
+                        <li><a href="catalog.html?category=productivity">Produtividade</a></li>
+                        <li><a href="catalog.html?category=design">Design</a></li>
+                        <li><a href="catalog.html?category=marketing">Marketing</a></li>
+                        <li><a href="catalog.html?category=finance">Finanças</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 SaaSFY. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/home.js"></script>
+</body>
+</html>
