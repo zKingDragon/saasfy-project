@@ -9,44 +9,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="index.html">
-                        <h2><i class="fas fa-rocket"></i> SaaSFY</h2>
-                    </a>
-                </div>
-                <div class="nav-links" id="navLinks">
-                    <a href="index.html">Início</a>
-                    <a href="catalog.html" class="active">Catálogo</a>
-                    <a href="#" onclick="goToRandomSaas()" class="random-btn">
-                        <i class="fas fa-random"></i> SaaS Aleatório
-                    </a>
-                    <div class="auth-buttons" id="authButtons">
-                        <a href="login.html" class="btn btn-outline">Login</a>
-                        <a href="login.html?mode=register" class="btn btn-primary">Cadastrar</a>
-                    </div>
-                    <div class="user-menu" id="userMenu" style="display: none;">
-                        <div class="dropdown">
-                            <button class="dropdown-btn" id="userDropdown">
-                                <i class="fas fa-user"></i>
-                                <span id="userName">Usuário</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <div class="dropdown-content" id="dropdownContent">
-                                <a href="#" id="dashboardLink"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mobile-menu-toggle" id="mobileToggle">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </div>
-        </div>
-    </header>
+    <div id="header">
 
     <!-- Page Header -->
     <section class="page-header">
@@ -159,6 +122,7 @@
         </div>
     </footer>
 
+    <script src="assets/js/header.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/catalog.js"></script>
 </body>

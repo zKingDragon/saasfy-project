@@ -4,7 +4,7 @@ async function loadHeader() {
         const response = await fetch('header.html');
         const headerHTML = await response.text();
         
-        const headerContainer = document.getElementById('mainHeader');
+        const headerContainer = document.getElementById('header');
         if (headerContainer) {
             headerContainer.innerHTML = headerHTML;
             
