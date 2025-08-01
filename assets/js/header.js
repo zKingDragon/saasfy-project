@@ -31,5 +31,4 @@ function initializeHeader() {
     // Outras funcionalidades do header podem ser adicionadas aqui
 }
 
-// Carregar header quando a página carregar
 document.addEventListener('DOMContentLoaded', loadHeader);
