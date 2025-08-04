@@ -3,175 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaaSFY - Descubra os Melhores SaaS</title>
+    <title>SaaSHub - Centralizador de SaaS Futurista</title>
+    <meta name="description" content="Descubra, acesse e gerencie os melhores SaaS em uma plataforma futurista e intuitiva">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="assets/css/style.css" as="style">
+    <link rel="preload" href="assets/js/main.js" as="script">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Favicon and PWA -->
+    <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+    <meta name="theme-color" content="#3C3A66">
 </head>
-<body>
-       <!--Header-->
+<body class="loading">
+    <!-- Loading Screen with Neural Animation -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="neural-network">
+            <div class="neural-node"></div>
+            <div class="neural-node"></div>
+            <div class="neural-node"></div>
+            <div class="neural-connection"></div>
+            <div class="neural-connection"></div>
+        </div>
+        <div class="loading-text">
+            <span class="loading-letter">S</span>
+            <span class="loading-letter">a</span>
+            <span class="loading-letter">a</span>
+            <span class="loading-letter">S</span>
+            <span class="loading-letter">H</span>
+            <span class="loading-letter">u</span>
+            <span class="loading-letter">b</span>
+        </div>
+        <div class="loading-progress">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Voice Command Indicator -->
+    <div id="voiceIndicator" class="voice-indicator hidden">
+        <div class="voice-pulse"></div>
+        <span>Escutando...</span>
+    </div>
+
     <div id="header"></div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="home" class="hero-section active">
+            <div class="hero-background">
+                <div class="floating-particles"></div>
+                <canvas id="heroCanvas" class="hero-canvas"></canvas>
+            </div>
+            
             <div class="hero-content">
-                <h1>Descubra e Acesse os Melhores SaaS em um Só Lugar</h1>
-                <p>Uma plataforma completa onde você pode encontrar, testar e usar diversos SaaS. Desenvolvedores também podem cadastrar suas soluções e alcançar mais usuários.</p>
-                <div class="hero-buttons">
-                    <a href="catalog.html" class="btn btn-primary btn-large">Explorar Catálogo</a>
-                    <a href="login.html?mode=register&type=developer" class="btn btn-outline btn-large">Sou Desenvolvedor</a>
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="title-line">Descubra o Futuro</span>
+                        <span class="title-line">dos <span class="highlight-text">SaaS</span></span>
+                    </h1>
+                    <p class="hero-description">
+                        Uma plataforma revolucionária que centraliza os melhores SaaS do mercado. 
+                        Acesse, teste e gerencie tudo em um só lugar com tecnologia de ponta.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-large" onclick="scrollToSection('catalog')">
+                            <span>Explorar SaaS</span>
+                            <div class="btn-particles"></div>
+                            <div class="btn-glow"></div>
+                        </button>
+                        <button class="btn btn-ghost btn-large" onclick="scrollToSection('about')">
+                            <span>Saiba Mais</span>
+                            <div class="btn-glow"></div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="hero-visual">
+                    <div class="floating-dashboard">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <div class="card-dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <div class="metric">
+                                    <span class="metric-value">150+</span>
+                                    <span class="metric-label">SaaS Disponíveis</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value">50k+</span>
+                                    <span class="metric-label">Usuários Ativos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="hero-image">
-                <i class="fas fa-cloud fa-10x"></i>
-            </div>
-        </div>
-    </section>
 
-    <!-- Popular SaaS Section -->
-    <section class="popular-saas">
-        <div class="container">
+            <!-- Scroll Indicator -->
+            <div class="scroll-indicator">
+                <div class="scroll-mouse">
+                    <div class="scroll-wheel"></div>
+                </div>
+                <span class="scroll-text">Role para explorar</span>
+            </div>
+        </section>
+
+        <!-- Catalog Section -->
+        <section id="catalog" class="catalog-section">
             <div class="section-header">
-                <h2>SaaS Populares</h2>
-                <p>Os mais acessados e bem avaliados da nossa plataforma</p>
+                <h2 class="section-title">
+                    <span class="title-accent">Catálogo</span> de SaaS
+                </h2>
+                <p class="section-description">
+                    Explore nossa coleção curada de ferramentas SaaS de última geração
+                </p>
             </div>
-            <div class="saas-grid" id="popularSaasGrid">
-                <!-- Popular SaaS cards will be loaded here -->
-            </div>
-            <div class="section-footer">
-                <a href="catalog.html" class="btn btn-primary btn-large">
-                    Ver Todos os SaaS <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
 
-    <!-- Categories Section -->
-    <section class="categories">
-        <div class="container">
-            <div class="section-header">
-                <h2>Explore por Categoria</h2>
-                <p>Encontre SaaS específicos para suas necessidades</p>
-            </div>
-            <div class="categories-grid">
-                <a href="catalog.html?category=productivity" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-tasks"></i>
+            <!-- Smart Filters -->
+            <div class="smart-filters">
+                <div class="filter-container">
+                    <!-- Search with AI suggestions -->
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <input type="text" 
+                                   class="search-input" 
+                                   id="searchInput" 
+                                   placeholder="Buscar SaaS inteligente..."
+                                   autocomplete="off">
+                            <div class="search-icon">🔍</div>
+                            <div class="search-ai-indicator" id="aiIndicator">
+                                <div class="ai-pulse"></div>
+                            </div>
+                        </div>
+                        <div class="search-suggestions" id="searchSuggestions"></div>
                     </div>
-                    <h3>Produtividade</h3>
-                    <p>Ferramentas para organização e gestão de tarefas</p>
-                </a>
-                <a href="catalog.html?category=design" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-palette"></i>
-                    </div>
-                    <h3>Design</h3>
-                    <p>Soluções criativas para designers e artistas</p>
-                </a>
-                <a href="catalog.html?category=marketing" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-bullhorn"></i>
-                    </div>
-                    <h3>Marketing</h3>
-                    <p>Automatize e otimize suas campanhas</p>
-                </a>
-                <a href="catalog.html?category=finance" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Finanças</h3>
-                    <p>Controle financeiro e análise de dados</p>
-                </a>
-                <a href="catalog.html?category=development" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h3>Desenvolvimento</h3>
-                    <p>Ferramentas para desenvolvedores</p>
-                </a>
-                <a href="catalog.html?category=communication" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h3>Comunicação</h3>
-                    <p>Soluções para equipes e colaboração</p>
-                </a>
-            </div>
-        </div>
-    </section>
 
-    <!-- Stats Section -->
-    <section class="stats">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">SaaS Disponíveis</div>
+                    <!-- Category Pills -->
+                    <div class="category-filters">
+                        <button class="filter-pill active" data-category="all">
+                            <span class="pill-icon">🌟</span>
+                            <span>Todos</span>
+                            <div class="pill-glow"></div>
+                        </button>
+                        <button class="filter-pill" data-category="productivity">
+                            <span class="pill-icon">⚡</span>
+                            <span>Produtividade</span>
+                            <div class="pill-glow"></div>
+                        </button>
+                        <button class="filter-pill" data-category="design">
+                            <span class="pill-icon">🎨</span>
+                            <span>Design</span>
+                            <div class="pill-glow"></div>
+                        </button>
+                        <button class="filter-pill" data-category="marketing">
+                            <span class="pill-icon">📈</span>
+                            <span>Marketing</span>
+                            <div class="pill-glow"></div>
+                        </button>
+                        <button class="filter-pill" data-category="development">
+                            <span class="pill-icon">💻</span>
+                            <span>Desenvolvimento</span>
+                            <div class="pill-glow"></div>
+                        </button>
+                    </div>
+
+                    <!-- Advanced Filters Toggle -->
+                    <button class="advanced-filters-toggle" id="advancedToggle">
+                        <span>Filtros Avançados</span>
+                        <div class="toggle-icon">⚙️</div>
+                    </button>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">1000+</div>
-                    <div class="stat-label">Usuários Ativos</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">4.8</div>
-                    <div class="stat-label">Avaliação Média</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Suporte</div>
+
+                <!-- Advanced Filters Panel -->
+                <div class="advanced-filters hidden" id="advancedFilters">
+                    <div class="filter-group">
+                        <label class="filter-label">Preço</label>
+                        <div class="price-range">
+                            <button class="price-option active" data-price="free">Grátis</button>
+                            <button class="price-option" data-price="premium">Premium</button>
+                            <button class="price-option" data-price="all">Todos</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Avaliação</label>
+                        <div class="rating-filter">
+                            <div class="star-rating" data-rating="4">
+                                <span class="star">⭐</span>
+                                <span class="star">⭐</span>
+                                <span class="star">⭐</span>
+                                <span class="star">⭐</span>
+                                <span class="star">☆</span>
+                                <span class="rating-text">4+ estrelas</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- SaaS Grid -->
+            <div class="saas-grid" id="saasGrid">
+                <!-- SaaS cards will be dynamically loaded here -->
+            </div>
+
+            <!-- Load More Button -->
+            <div class="load-more-container">
+                <button class="btn btn-ghost btn-large" id="loadMoreBtn">
+                    <span>Carregar Mais SaaS</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">
+                        Por que escolher o <span class="highlight-text">SaaSHub</span>?
+                    </h2>
+                    <p class="section-description">
+                        Revolucionamos a forma como você descobre, acessa e gerencia ferramentas SaaS. 
+                        Nossa plataforma combina inteligência artificial, design futurista e experiência 
+                        do usuário excepcional.
+                    </p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <h3 class="feature-title">Acesso Instantâneo</h3>
+                        <p class="feature-description">
+                            Teste SaaS diretamente na plataforma sem cadastros múltiplos
+                        </p>
+                        <div class="feature-glow"></div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">IA Integrada</h3>
+                        <p class="feature-description">
+                            Recomendações personalizadas baseadas no seu comportamento
+                        </p>
+                        <div class="feature-glow"></div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3 class="feature-title">Segurança Total</h3>
+                        <p class="feature-description">
+                            Todos os SaaS são verificados e seguros para uso
+                        </p>
+                        <div class="feature-glow"></div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Performance</h3>
+                        <p class="feature-description">
+                            Carregamento ultrarrápido com tecnologia de ponta
+                        </p>
+                        <div class="feature-glow"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab" id="fabMain">
+            <div class="fab-icon">➕</div>
+            <div class="fab-glow"></div>
+        </button>
+        <div class="fab-menu" id="fabMenu">
+            <button class="fab-item" onclick="navigateToSubmit()" title="Enviar SaaS">
+                <div class="fab-icon">📤</div>
+            </button>
+            <button class="fab-item" onclick="scrollToTop()" title="Voltar ao Topo">
+                <div class="fab-icon">⬆️</div>
+            </button>
+            <button class="fab-item" onclick="toggleVoiceCommand()" title="Comando de Voz">
+                <div class="fab-icon">🎤</div>
+            </button>
         </div>
-    </section>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification-container" id="notificationContainer"></div>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3><i class="fas fa-rocket"></i> SaaSFY</h3>
-                    <p>A plataforma definitiva para descobrir e usar os melhores SaaS do mercado.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-github"></i></a>
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <div class="logo-icon small">
+                        <div class="logo-cube small">
+                            <div class="cube-face front"></div>
+                            <div class="cube-face back"></div>
+                            <div class="cube-face right"></div>
+                            <div class="cube-face left"></div>
+                            <div class="cube-face top"></div>
+                            <div class="cube-face bottom"></div>
+                        </div>
                     </div>
+                    <span class="footer-logo-text">SaaSHub</span>
                 </div>
-                <div class="footer-section">
-                    <h4>Navegação</h4>
-                    <ul>
-                        <li><a href="index.html">Início</a></li>
-                        <li><a href="catalog.html">Catálogo</a></li>
-                        <li><a href="login.html">Login</a></li>
-                        <li><a href="#about">Sobre</a></li>
-                    </ul>
+                <p class="footer-description">
+                    O futuro dos SaaS está aqui. Descubra, acesse e gerencie 
+                    as melhores ferramentas em uma plataforma revolucionária.
+                </p>
+            </div>
+
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4 class="link-title">Plataforma</h4>
+                    <a href="#" class="footer-link">Catálogo</a>
+                    <a href="#" class="footer-link">Para Desenvolvedores</a>
+                    <a href="#" class="footer-link">API</a>
                 </div>
-                <div class="footer-section">
-                    <h4>Para Desenvolvedores</h4>
-                    <ul>
-                        <li><a href="login.html?mode=register&type=developer">Cadastrar SaaS</a></li>
-                        <li><a href="#">Documentação</a></li>
-                        <li><a href="#">API</a></li>
-                        <li><a href="#">Suporte</a></li>
-                    </ul>
+                <div class="link-group">
+                    <h4 class="link-title">Suporte</h4>
+                    <a href="#" class="footer-link">Central de Ajuda</a>
+                    <a href="#" class="footer-link">Contato</a>
+                    <a href="#" class="footer-link">Status</a>
                 </div>
-                <div class="footer-section">
-                    <h4>Categorias</h4>
-                    <ul>
-                        <li><a href="catalog.html?category=productivity">Produtividade</a></li>
-                        <li><a href="catalog.html?category=design">Design</a></li>
-                        <li><a href="catalog.html?category=marketing">Marketing</a></li>
-                        <li><a href="catalog.html?category=finance">Finanças</a></li>
-                    </ul>
+                <div class="link-group">
+                    <h4 class="link-title">Legal</h4>
+                    <a href="#" class="footer-link">Privacidade</a>
+                    <a href="#" class="footer-link">Termos</a>
+                    <a href="#" class="footer-link">Cookies</a>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 SaaSFY. Todos os direitos reservados.</p>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 SaaSHub. Todos os direitos reservados.</p>
+            <div class="footer-social">
+                <a href="#" class="social-link">🐦</a>
+                <a href="#" class="social-link">💼</a>
+                <a href="#" class="social-link">📧</a>
             </div>
         </div>
     </footer>
-    <script src="assets/js/header.js"></script>
-    <script src="assets/js/main.js"></script>   
-    <script src="assets/js/home.js"></script>
+
+    <!-- Scripts -->
+    <script type="module" src="assets/js/firebase-config.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/animations.js"></script>
+    <script type="module" src="assets/js/voice-commands.js"></script>
+    <script type="module" src="assets/js/ai-suggestions.js"></script>
 </body>
 </html>

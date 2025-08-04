@@ -77,20 +77,15 @@ function loadMySaas() {
 }
 
 function renderSaasTable(saasArray) {
-  const mySaasTable = document.getElementById("mySaasTable")
+  const saasTableBody = document.getElementById("saasTableBody")
 
-  mySaasTable.innerHTML = `
-        <div class="table-header">
-            <div>SaaS</div>
-            <div>Categoria</div>
-            <div>Plano</div>
-            <div>Avaliação</div>
-            <div>Ações</div>
-        </div>
-        ${saasArray
-          .map(
-            (saas) => `
-            <div class="table-row">
+  if (!saasTableBody) return
+
+  saasTableBody.innerHTML = saasArray
+    .map(
+      (saas) => `
+        <tr>
+            <td>
                 <div class="saas-info">
                     <div class="saas-icon">
                         <i class="${saas.icon || SaaSFY.getCategoryIcon(saas.category)}"></i>
@@ -100,36 +95,41 @@ function renderSaasTable(saasArray) {
                         <div class="saas-url">${saas.url}</div>
                     </div>
                 </div>
-                <div>
-                    <span class="category-badge">${SaaSFY.getCategoryName(saas.category)}</span>
-                </div>
-                <div>
-                    <span class="status-badge ${saas.plan === "pro" ? "status-active" : "status-inactive"}">
-                        ${saas.plan === "pro" ? "Pro" : "Grátis"}
-                    </span>
-                </div>
-                <div>
+            </td>
+            <td>
+                <span class="category-badge">${SaaSFY.getCategoryName(saas.category)}</span>
+            </td>
+            <td>
+                <span class="status-badge ${saas.plan === "pro" ? "status-active" : "status-inactive"}">
+                    ${saas.plan === "pro" ? "Pro" : "Grátis"}
+                </span>
+            </td>
+            <td>${saas.views || 0}</td>
+            <td>
+                <div class="rating-cell">
                     <div class="stars">
                         ${SaaSFY.generateStars(saas.rating)}
                     </div>
                     <small>${SaaSFY.formatRating(saas.rating)} (${saas.ratings.length})</small>
                 </div>
+            </td>
+            <td>
                 <div class="table-actions">
-                    <button class="action-btn" onclick="editSaas(${saas.id})" title="Editar">
+                    <button class="btn btn-sm btn-outline" onclick="editSaas(${saas.id})" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="action-btn" onclick="openDeleteModal(${saas.id})" title="Excluir">
+                    <button class="btn btn-sm btn-danger" onclick="openDeleteModal(${saas.id})" title="Excluir">
                         <i class="fas fa-trash"></i>
                     </button>
-                    <a href="saas.html?id=${saas.id}" class="action-btn" title="Visualizar">
+                    <a href="saas-detail.html?id=${saas.id}" class="btn btn-sm btn-primary" title="Visualizar">
                         <i class="fas fa-eye"></i>
                     </a>
                 </div>
-            </div>
-        `,
-          )
-          .join("")}
-    `
+            </td>
+        </tr>
+    `,
+    )
+    .join("")
 }
 
 function initializeSearch() {
