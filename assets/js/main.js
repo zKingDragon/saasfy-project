@@ -81,7 +81,12 @@ function hideLoadingScreen() {
 // ===== HEADER LOADING =====
 async function loadHeader() {
   try {
-    const response = await fetch('header.html')
+    // Determine the correct path to header.html based on current location
+    const currentPath = window.location.pathname
+    const isInHtmlFolder = currentPath.includes('/html/')
+    const headerPath = isInHtmlFolder ? 'header.html' : 'html/header.html'
+    
+    const response = await fetch(headerPath)
     const headerHTML = await response.text()
     
     const headerContainer = document.getElementById('header')
@@ -952,6 +957,17 @@ function initializeThreeJSBackground() {
   })
 }
 
+function toggleFavorite(saasId) {
+  if (window.FavoritesSystem && window.FavoritesSystem.toggleFavorite) {
+    window.FavoritesSystem.toggleFavorite(saasId)
+  } else {
+    console.log("Favorite toggled for SaaS:", saasId)
+    if (window.SaaSHub && window.SaaSHub.showNotification) {
+      window.SaaSHub.showNotification("Sistema de favoritos carregando...", "info")
+    }
+  }
+}
+
 // ===== NOTIFICATION SYSTEM =====
 function showNotification(message, type = "info", duration = 5000) {
   const container = document.getElementById("notificationContainer")
@@ -1181,6 +1197,8 @@ window.SaaSHub = {
   toggleVoiceCommand,
   scrollToTop,
   clearFilters,
+  logout,
+
 }
 
 console.log("🎯 SaaSHub Main Module Loaded")
