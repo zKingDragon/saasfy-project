@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS - SaaSFY</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="saas-page">
+    <!-- SaaS Header -->
+    <div class="saas-header">
+        <div class="container">
+            <div class="saas-nav">
+                <button class="back-btn" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </button>
+                
+                <div class="saas-info">
+                    <div class="saas-icon" id="saasIcon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="saas-details">
+                        <h1 id="saasTitle">Carregando...</h1>
+                        <p id="saasDescription">Carregando descrição...</p>
+                    </div>
+                </div>
+                
+                <div class="saas-actions">
+                    <button class="action-btn" id="favoriteBtn" onclick="toggleFavorite()">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <div class="rating-container">
+                        <div class="stars" id="ratingStars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <span class="rating-text" id="ratingText">Avaliar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SaaS Content -->
+    <div class="saas-content">
+        <div class="saas-container" id="saasContainer">
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p>Carregando SaaS...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div class="error-state" id="errorState" style="display: none;">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <h3>Erro ao carregar SaaS</h3>
+                <p>Não foi possível carregar este SaaS. Verifique se a URL está correta.</p>
+                <button class="btn btn-primary" onclick="reloadSaas()">Tentar Novamente</button>
+            </div>
+            
+            <!-- Premium Required -->
+            <div class="premium-required" id="premiumRequired" style="display: none;">
+                <i class="fas fa-crown fa-3x"></i>
+                <h3>SaaS Premium</h3>
+                <p>Este SaaS está disponível apenas para usuários do plano Pro.</p>
+                <a href="dashboard-usuario.html#upgrade" class="btn btn-primary">
+                    <i class="fas fa-crown"></i> Fazer Upgrade
+                </a>
+            </div>
+            
+            <!-- SaaS Frame -->
+            <iframe id="saasFrame" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div class="modal" id="ratingModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Avaliar SaaS</h2>
+                <button class="modal-close" onclick="closeRatingModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rating-section">
+                    <p>Como você avalia este SaaS?</p>
+                    <div class="rating-stars" id="modalRatingStars">
+                        <i class="far fa-star" data-rating="1"></i>
+                        <i class="far fa-star" data-rating="2"></i>
+                        <i class="far fa-star" data-rating="3"></i>
+                        <i class="far fa-star" data-rating="4"></i>
+                        <i class="far fa-star" data-rating="5"></i>
+                    </div>
+                    <div class="rating-labels">
+                        <span>Ruim</span>
+                        <span>Excelente</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ratingComment">Comentário (opcional)</label>
+                    <textarea id="ratingComment" rows="3" placeholder="Compartilhe sua experiência..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeRatingModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="submitRating()">
+                    <i class="fas fa-star"></i> Avaliar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/header.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/saas.js"></script>
+</body>
+</html>

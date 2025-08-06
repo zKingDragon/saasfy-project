@@ -1,1204 +1,1052 @@
-/**
- * SaaSHub - Main JavaScript Module
- * Handles core functionality, navigation, and user interactions with Firebase
- */
+// Main JavaScript file for SaaSFY
+// Contains global functions and utilities
 
-// Import Firebase service
-import { firebaseService } from './firebase-config.js'
+// Global variables
+let currentUser = null
+let allSaas = []
 
-// ===== GLOBAL STATE =====
-const AppState = {
-  currentUser: null,
-  currentSection: "home",
-  isLoading: true,
-  saasData: [],
-  filteredSaas: [],
-  searchQuery: "",
-  activeFilters: {
-    category: "all",
-    price: "all",
-    rating: 0,
-  },
-  voiceEnabled: false,
-  theme: "dark",
-  unsubscribeFunctions: []
+// Initialize the application
+document.addEventListener("DOMContentLoaded", () => {
+  initializeApp()
+})
+
+// Initialize application
+function initializeApp() {
+  // Check if user is logged in
+  currentUser = getCurrentUser()
+
+  // Initialize sample data if not exists
+  initializeSampleData()
+
+  // Update UI based on authentication status
+  updateAuthUI()
+
+  // Initialize mobile menu
+  initializeMobileMenu()
+
+  // Initialize dropdowns
+  initializeDropdowns()
 }
 
-// ===== INITIALIZATION =====
-document.addEventListener("DOMContentLoaded", initializeApp)
-
-async function initializeApp() {
-  try {
-    // Show loading screen
-    showLoadingScreen()
-
-    // Initialize core modules
-    await Promise.all([
-      initializeAuth(),
-      initializeSaasData(),
-      loadHeader(),
-      initializeNavigation(),
-      initializeVoiceCommands(),
-      initializeTheme(),
-      initializeAnimations(),
-    ])
-
-    // Hide loading screen after delay
-    setTimeout(hideLoadingScreen, 2000)
-
-    // Initialize page-specific functionality
-    initializeHomePage()
-
-    console.log("🚀 SaaSHub initialized successfully")
-  } catch (error) {
-    console.error("❌ Failed to initialize SaaSHub:", error)
-    showNotification("Erro ao carregar a aplicação", "error")
-  }
+// Authentication functions
+function getCurrentUser() {
+  const userData = localStorage.getItem("currentUser")
+  return userData ? JSON.parse(userData) : null
 }
 
-// ===== LOADING SCREEN =====
-function showLoadingScreen() {
-  const loadingScreen = document.getElementById("loadingScreen")
-  if (loadingScreen) {
-    loadingScreen.classList.remove("hidden")
-    document.body.classList.add("loading")
-  }
+function setCurrentUser(user) {
+  currentUser = user
+  localStorage.setItem("currentUser", JSON.stringify(user))
+  updateAuthUI()
 }
 
-function hideLoadingScreen() {
-  const loadingScreen = document.getElementById("loadingScreen")
-  if (loadingScreen) {
-    loadingScreen.classList.add("hidden")
-    document.body.classList.remove("loading")
-
-    // Trigger entrance animations
-    setTimeout(() => {
-      triggerEntranceAnimations()
-    }, 300)
-  }
-}
-
-// ===== HEADER LOADING =====
-async function loadHeader() {
-  try {
-    // Determine the correct path to header.html based on current location
-    const currentPath = window.location.pathname
-    const isInHtmlFolder = currentPath.includes('/html/')
-    const headerPath = isInHtmlFolder ? 'header.html' : 'html/header.html'
-    
-    const response = await fetch(headerPath)
-    const headerHTML = await response.text()
-    
-    const headerContainer = document.getElementById('header')
-    if (headerContainer) {
-      headerContainer.innerHTML = headerHTML
-    }
-  } catch (error) {
-    console.error('Erro ao carregar header:', error)
-  }
-}
-
-// ===== AUTHENTICATION =====
-async function initializeAuth() {
-  // Set up Firebase auth listener
-  const unsubscribe = firebaseService.onAuthStateChanged(async (user) => {
-    if (user) {
-      try {
-        // Get user document from Firestore
-        const userData = await firebaseService.getUserDocument(user.uid)
-        if (userData) {
-          AppState.currentUser = {
-            uid: user.uid,
-            email: user.email,
-            name: userData.displayName || user.displayName,
-            avatar: userData.avatar || user.photoURL,
-            type: userData.type || 'user'
-          }
-        } else {
-          // Create user document if it doesn't exist
-          AppState.currentUser = await firebaseService.createUserDocument(user)
-        }
-        
-        updateAuthUI()
-        
-        // Update last login
-        await firebaseService.updateUserDocument(user.uid, { lastLogin: new Date() })
-      } catch (error) {
-        console.error("Error loading user data:", error)
-        showNotification("Erro ao carregar dados do usuário", "error")
-      }
-    } else {
-      AppState.currentUser = null
-      updateAuthUI()
-    }
-  })
-  
-  AppState.unsubscribeFunctions.push(unsubscribe)
+function logout() {
+  localStorage.removeItem("currentUser")
+  currentUser = null
+  window.location.href = "index.html"
 }
 
 function updateAuthUI() {
   const authButtons = document.getElementById("authButtons")
   const userMenu = document.getElementById("userMenu")
-
-  if (AppState.currentUser) {
-    // Show user menu, hide auth buttons
-    if (authButtons) authButtons.classList.add("hidden")
-    if (userMenu) {
-      userMenu.classList.remove("hidden")
-      updateUserInfo()
-    }
-  } else {
-    // Show auth buttons, hide user menu
-    if (authButtons) authButtons.classList.remove("hidden")
-    if (userMenu) userMenu.classList.add("hidden")
-  }
-}
-
-function updateUserInfo() {
   const userName = document.getElementById("userName")
-  const userEmail = document.getElementById("userEmail")
-  const avatarImg = document.getElementById("avatarImg")
+  const dashboardLink = document.getElementById("dashboardLink")
 
-  if (AppState.currentUser) {
-    if (userName) userName.textContent = AppState.currentUser.name
-    if (userEmail) userEmail.textContent = AppState.currentUser.email
-    if (avatarImg) {
-      avatarImg.src = AppState.currentUser.avatar || "/placeholder.svg?height=40&width=40"
-    }
-  }
-}
+  if (currentUser) {
+    if (authButtons) authButtons.style.display = "none"
+    if (userMenu) userMenu.style.display = "block"
+    if (userName) userName.textContent = currentUser.name
 
-function logout() {
-  firebaseService.logout().then((result) => {
-    if (result.success) {
-      AppState.currentUser = null
-      updateAuthUI()
-      showNotification("Logout realizado com sucesso", "success")
-    } else {
-      showNotification("Erro ao fazer logout", "error")
-    }
-  })
-}
-
-// ===== SAAS DATA MANAGEMENT =====
-async function initializeSaasData() {
-  try {
-    // Load SaaS data from Firebase
-    AppState.saasData = await firebaseService.getAllSaas()
-    AppState.filteredSaas = [...AppState.saasData]
-    
-    // Set up real-time listener for SaaS updates
-    const unsubscribe = firebaseService.subscribeSaasUpdates((saasList) => {
-      AppState.saasData = saasList
-      filterSaasData() // Re-apply current filters
-    })
-    
-    AppState.unsubscribeFunctions.push(unsubscribe)
-    
-    console.log(`📦 Loaded ${AppState.saasData.length} SaaS from Firebase`)
-  } catch (error) {
-    console.error("Error loading SaaS data:", error)
-    showNotification("Erro ao carregar dados dos SaaS", "error")
-    
-    // Fallback to sample data
-    AppState.saasData = generateSampleSaasData()
-    AppState.filteredSaas = [...AppState.saasData]
-  }
-}
-
-function generateSampleSaasData() {
-  return [
-    {
-      id: 1,
-      name: "Notion AI",
-      category: "productivity",
-      description: "Workspace inteligente com IA integrada para produtividade máxima",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.8,
-      reviews: 1250,
-      price: "free",
-      isPremium: false,
-      tags: ["IA", "Produtividade", "Colaboração"],
-      url: "https://notion.so",
-      featured: true,
-    },
-    {
-      id: 2,
-      name: "Figma Pro",
-      category: "design",
-      description: "Design colaborativo de próxima geração com recursos avançados",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.9,
-      reviews: 2100,
-      price: "premium",
-      isPremium: true,
-      tags: ["Design", "Colaboração", "Prototipagem"],
-      url: "https://figma.com",
-      featured: true,
-    },
-    {
-      id: 3,
-      name: "HubSpot CRM",
-      category: "marketing",
-      description: "CRM completo com automação de marketing e vendas",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.6,
-      reviews: 890,
-      price: "free",
-      isPremium: false,
-      tags: ["CRM", "Marketing", "Vendas"],
-      url: "https://hubspot.com",
-      featured: false,
-    },
-    {
-      id: 4,
-      name: "VS Code AI",
-      category: "development",
-      description: "Editor de código com assistente IA para desenvolvimento",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.7,
-      reviews: 3200,
-      price: "free",
-      isPremium: false,
-      tags: ["Código", "IA", "Desenvolvimento"],
-      url: "https://code.visualstudio.com",
-      featured: true,
-    },
-    {
-      id: 5,
-      name: "Canva Pro",
-      category: "design",
-      description: "Design gráfico simplificado com templates premium",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.5,
-      reviews: 1800,
-      price: "premium",
-      isPremium: true,
-      tags: ["Design", "Templates", "Marketing"],
-      url: "https://canva.com",
-      featured: false,
-    },
-    {
-      id: 6,
-      name: "Slack AI",
-      category: "productivity",
-      description: "Comunicação empresarial com assistente IA integrado",
-      logo: "/placeholder.svg?height=60&width=60",
-      rating: 4.4,
-      reviews: 950,
-      price: "premium",
-      isPremium: true,
-      tags: ["Comunicação", "IA", "Equipes"],
-      url: "https://slack.com",
-      featured: false,
-    },
-  ]
-}
-
-// ===== NAVIGATION =====
-function initializeNavigation() {
-  // Initialize smooth scrolling navigation
-  const navLinks = document.querySelectorAll(".nav-link")
-  navLinks.forEach((link) => {
-    link.addEventListener("click", handleNavigation)
-  })
-
-  // Initialize mobile menu
-  const mobileToggle = document.getElementById("mobileToggle")
-  const navMenu = document.getElementById("navMenu")
-
-  if (mobileToggle && navMenu) {
-    mobileToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("visible")
-      mobileToggle.classList.toggle("active")
-    })
-  }
-
-  // Initialize scroll spy
-  initializeScrollSpy()
-
-  // Initialize header scroll effect
-  initializeHeaderScroll()
-}
-
-function handleNavigation(event) {
-  event.preventDefault()
-  const targetSection = event.currentTarget.dataset.section
-
-  if (targetSection) {
-    scrollToSection(targetSection)
-    updateActiveNavLink(targetSection)
-  }
-}
-
-function scrollToSection(sectionId) {
-  const section = document.getElementById(sectionId)
-  if (section) {
-    const headerHeight = 80
-    const targetPosition = section.offsetTop - headerHeight
-
-    window.scrollTo({
-      top: targetPosition,
-      behavior: "smooth",
-    })
-
-    AppState.currentSection = sectionId
-  }
-}
-
-function updateActiveNavLink(activeSection) {
-  const navLinks = document.querySelectorAll(".nav-link")
-  navLinks.forEach((link) => {
-    link.classList.remove("active")
-    if (link.dataset.section === activeSection) {
-      link.classList.add("active")
-    }
-  })
-}
-
-function initializeScrollSpy() {
-  const sections = document.querySelectorAll("section[id]")
-  const options = {
-    threshold: 0.3,
-    rootMargin: "-80px 0px -80px 0px",
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const sectionId = entry.target.id
-        updateActiveNavLink(sectionId)
-        AppState.currentSection = sectionId
-      }
-    })
-  }, options)
-
-  sections.forEach((section) => observer.observe(section))
-}
-
-function initializeHeaderScroll() {
-  const header = document.getElementById("header")
-  let lastScrollY = window.scrollY
-
-  window.addEventListener("scroll", () => {
-    const currentScrollY = window.scrollY
-
-    if (header) {
-      if (currentScrollY > 100) {
-        header.classList.add("scrolled")
+    // Set dashboard link based on user type
+    if (dashboardLink) {
+      if (currentUser.type === "developer") {
+        dashboardLink.href = "dashboard-dev.html"
       } else {
-        header.classList.remove("scrolled")
+        dashboardLink.href = "dashboard-usuario.html"
       }
     }
-
-    lastScrollY = currentScrollY
-  })
-}
-
-// ===== VOICE COMMANDS =====
-async function initializeVoiceCommands() {
-  if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    const recognition = new SpeechRecognition()
-
-    recognition.continuous = false
-    recognition.interimResults = false
-    recognition.lang = "pt-BR"
-
-    const voiceBtn = document.getElementById("voiceBtn")
-    const voiceIndicator = document.getElementById("voiceIndicator")
-
-    if (voiceBtn) {
-      voiceBtn.addEventListener("click", toggleVoiceCommand)
-    }
-
-    // Keyboard shortcut Alt+V
-    document.addEventListener("keydown", (event) => {
-      if (event.altKey && event.key === "v") {
-        event.preventDefault()
-        toggleVoiceCommand()
-      }
-    })
-
-    recognition.onstart = () => {
-      AppState.voiceEnabled = true
-      if (voiceIndicator) voiceIndicator.classList.remove("hidden")
-      if (voiceBtn) voiceBtn.classList.add("active")
-    }
-
-    recognition.onend = () => {
-      AppState.voiceEnabled = false
-      if (voiceIndicator) voiceIndicator.classList.add("hidden")
-      if (voiceBtn) voiceBtn.classList.remove("active")
-    }
-
-    recognition.onresult = (event) => {
-      const command = event.results[0][0].transcript.toLowerCase()
-      processVoiceCommand(command)
-    }
-
-    recognition.onerror = (event) => {
-      console.error("Voice recognition error:", event.error)
-      showNotification("Erro no reconhecimento de voz", "error")
-    }
-
-    window.speechRecognition = recognition
   } else {
-    console.warn("Speech recognition not supported")
+    if (authButtons) authButtons.style.display = "flex"
+    if (userMenu) userMenu.style.display = "none"
   }
 }
 
-function toggleVoiceCommand() {
-  if (window.speechRecognition) {
-    if (AppState.voiceEnabled) {
-      window.speechRecognition.stop()
-    } else {
-      window.speechRecognition.start()
-    }
-  }
-}
-
-function processVoiceCommand(command) {
-  console.log("Voice command:", command)
-
-  // Navigation commands
-  if (command.includes("início") || command.includes("home")) {
-    scrollToSection("home")
-    showNotification("Navegando para o início", "info")
-  } else if (command.includes("catálogo") || command.includes("catalog")) {
-    scrollToSection("catalog")
-    showNotification("Navegando para o catálogo", "info")
-  } else if (command.includes("sobre") || command.includes("about")) {
-    scrollToSection("about")
-    showNotification("Navegando para sobre", "info")
-  }
-  // Search commands
-  else if (command.includes("buscar") || command.includes("procurar")) {
-    const searchInput = document.getElementById("searchInput")
-    if (searchInput) {
-      searchInput.focus()
-      showNotification("Campo de busca ativado", "info")
-    }
-  }
-  // Login commands
-  else if (command.includes("login") || command.includes("entrar")) {
-    navigateToLogin()
-    showNotification("Navegando para login", "info")
-  }
-  // Unknown command
-  else {
-    showNotification("Comando não reconhecido", "error")
-  }
-}
-
-// ===== THEME MANAGEMENT =====
-function initializeTheme() {
-  const themeToggle = document.getElementById("themeToggle")
-  const storedTheme = localStorage.getItem("saashub_theme") || "dark"
-
-  AppState.theme = storedTheme
-  applyTheme(storedTheme)
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", toggleTheme)
-  }
-}
-
-function toggleTheme() {
-  const newTheme = AppState.theme === "dark" ? "light" : "dark"
-  AppState.theme = newTheme
-  applyTheme(newTheme)
-  localStorage.setItem("saashub_theme", newTheme)
-}
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme)
-
-  const themeToggle = document.getElementById("themeToggle")
-  if (themeToggle) {
-    const sunIcon = themeToggle.querySelector(".sun")
-    const moonIcon = themeToggle.querySelector(".moon")
-
-    if (theme === "light") {
-      if (sunIcon) sunIcon.style.opacity = "0"
-      if (moonIcon) moonIcon.style.opacity = "1"
-    } else {
-      if (sunIcon) sunIcon.style.opacity = "1"
-      if (moonIcon) moonIcon.style.opacity = "0"
-    }
-  }
-}
-
-// ===== ANIMATIONS =====
-const gsap = window.gsap
-const ScrollTrigger = window.ScrollTrigger
-
-function initializeAnimations() {
-  // Initialize GSAP animations
-  if (typeof gsap !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger)
-
-    // Animate elements on scroll
-    gsap.utils.toArray(".feature-card").forEach((card, index) => {
-      gsap.fromTo(
-        card,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          delay: index * 0.1,
-          scrollTrigger: {
-            trigger: card,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse",
+// Initialize sample data with static SaaS
+function initializeSampleData() {
+  if (!localStorage.getItem("saasData")) {
+    const sampleSaas = [
+      {
+        id: 1,
+        name: "Notion",
+        shortDescription: "Workspace tudo-em-um para anotações, tarefas e colaboração",
+        description:
+          "O Notion é uma ferramenta de produtividade que combina anotações, gerenciamento de tarefas, wikis e bancos de dados em um único workspace. Perfeito para equipes que precisam organizar informações e colaborar de forma eficiente.",
+        url: "https://notion.so",
+        category: "productivity",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-edit",
+            title: "Editor Rico",
+            description: "Editor de texto avançado com blocos personalizáveis",
           },
-        },
-      )
+          {
+            icon: "fas fa-database",
+            title: "Bancos de Dados",
+            description: "Crie e gerencie bancos de dados relacionais",
+          },
+          {
+            icon: "fas fa-users",
+            title: "Colaboração",
+            description: "Trabalhe em equipe em tempo real",
+          },
+          {
+            icon: "fas fa-mobile-alt",
+            title: "Multi-plataforma",
+            description: "Acesse de qualquer dispositivo",
+          },
+        ],
+        rating: 4.8,
+        views: 1250,
+        ratings: [
+          { user: "user1", rating: 5, comment: "Ferramenta incrível para organização!", createdAt: "2024-01-15" },
+          {
+            user: "user2",
+            rating: 4,
+            comment: "Muito útil, mas tem uma curva de aprendizado.",
+            createdAt: "2024-01-10",
+          },
+        ],
+        createdAt: "2024-01-01",
+      },
+      {
+        id: 2,
+        name: "Figma",
+        shortDescription: "Ferramenta de design colaborativo para interfaces",
+        description:
+          "Figma é uma ferramenta de design baseada na web que permite criar interfaces, protótipos e sistemas de design de forma colaborativa. Ideal para designers e equipes de produto.",
+        url: "https://figma.com",
+        category: "design",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-vector-square",
+            title: "Design Vetorial",
+            description: "Ferramentas avançadas de design vetorial",
+          },
+          {
+            icon: "fas fa-play",
+            title: "Prototipagem",
+            description: "Crie protótipos interativos facilmente",
+          },
+          {
+            icon: "fas fa-comments",
+            title: "Comentários",
+            description: "Sistema de feedback integrado",
+          },
+          {
+            icon: "fas fa-cloud",
+            title: "Na Nuvem",
+            description: "Acesso de qualquer lugar, sem instalação",
+          },
+        ],
+        rating: 4.9,
+        views: 980,
+        ratings: [
+          { user: "user1", rating: 5, comment: "Melhor ferramenta de design!", createdAt: "2024-01-12" },
+          { user: "user3", rating: 5, comment: "Colaboração em tempo real é fantástica.", createdAt: "2024-01-08" },
+        ],
+        createdAt: "2024-01-02",
+      },
+      {
+        id: 3,
+        name: "Slack",
+        shortDescription: "Plataforma de comunicação para equipes",
+        description:
+          "Slack é uma plataforma de comunicação empresarial que organiza conversas em canais, facilitando a colaboração entre equipes e a integração com outras ferramentas de trabalho.",
+        url: "https://slack.com",
+        category: "communication",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-hashtag",
+            title: "Canais",
+            description: "Organize conversas por tópicos",
+          },
+          {
+            icon: "fas fa-puzzle-piece",
+            title: "Integrações",
+            description: "Conecte com suas ferramentas favoritas",
+          },
+          {
+            icon: "fas fa-video",
+            title: "Chamadas",
+            description: "Videochamadas e compartilhamento de tela",
+          },
+          {
+            icon: "fas fa-search",
+            title: "Busca Avançada",
+            description: "Encontre qualquer mensagem rapidamente",
+          },
+        ],
+        rating: 4.6,
+        views: 1100,
+        ratings: [
+          { user: "user2", rating: 5, comment: "Essencial para nossa equipe!", createdAt: "2024-01-14" },
+          { user: "user4", rating: 4, comment: "Boa ferramenta, mas pode ser distrativa.", createdAt: "2024-01-09" },
+        ],
+        createdAt: "2024-01-03",
+      },
+      {
+        id: 4,
+        name: "Canva",
+        shortDescription: "Plataforma de design gráfico simplificada",
+        description:
+          "Canva é uma ferramenta de design gráfico online que permite criar designs profissionais facilmente, com milhares de templates e elementos visuais prontos para usar.",
+        url: "https://canva.com",
+        category: "design",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-images",
+            title: "Templates",
+            description: "Milhares de templates profissionais",
+          },
+          {
+            icon: "fas fa-magic",
+            title: "Editor Simples",
+            description: "Interface intuitiva de arrastar e soltar",
+          },
+          {
+            icon: "fas fa-palette",
+            title: "Brand Kit",
+            description: "Mantenha consistência visual da marca",
+          },
+          {
+            icon: "fas fa-share-alt",
+            title: "Compartilhamento",
+            description: "Compartilhe e colabore facilmente",
+          },
+        ],
+        rating: 4.7,
+        views: 890,
+        ratings: [
+          { user: "user1", rating: 5, comment: "Perfeito para quem não é designer!", createdAt: "2024-01-11" },
+          { user: "user5", rating: 4, comment: "Muitas opções, às vezes confuso.", createdAt: "2024-01-07" },
+        ],
+        createdAt: "2024-01-04",
+      },
+      {
+        id: 5,
+        name: "Trello",
+        shortDescription: "Gerenciamento de projetos com quadros Kanban",
+        description:
+          "Trello é uma ferramenta de gerenciamento de projetos baseada em quadros Kanban, que ajuda equipes a organizar tarefas e acompanhar o progresso de forma visual e intuitiva.",
+        url: "https://trello.com",
+        category: "productivity",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-columns",
+            title: "Quadros Kanban",
+            description: "Visualize o fluxo de trabalho",
+          },
+          {
+            icon: "fas fa-tags",
+            title: "Cartões",
+            description: "Organize tarefas em cartões detalhados",
+          },
+          {
+            icon: "fas fa-calendar",
+            title: "Calendário",
+            description: "Visualização em calendário dos prazos",
+          },
+          {
+            icon: "fas fa-robot",
+            title: "Automação",
+            description: "Butler para automatizar tarefas repetitivas",
+          },
+        ],
+        rating: 4.5,
+        views: 750,
+        ratings: [
+          { user: "user2", rating: 4, comment: "Simples e eficaz para projetos pequenos.", createdAt: "2024-01-13" },
+          { user: "user6", rating: 5, comment: "Interface muito intuitiva!", createdAt: "2024-01-06" },
+        ],
+        createdAt: "2024-01-05",
+      },
+      {
+        id: 6,
+        name: "HubSpot CRM",
+        shortDescription: "CRM gratuito para gerenciamento de vendas",
+        description:
+          "HubSpot CRM é uma plataforma completa de gerenciamento de relacionamento com clientes, oferecendo ferramentas para vendas, marketing e atendimento ao cliente.",
+        url: "https://hubspot.com",
+        category: "marketing",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-users",
+            title: "Gestão de Contatos",
+            description: "Organize todos os seus contatos",
+          },
+          {
+            icon: "fas fa-handshake",
+            title: "Pipeline de Vendas",
+            description: "Acompanhe negócios em andamento",
+          },
+          {
+            icon: "fas fa-chart-bar",
+            title: "Relatórios",
+            description: "Analytics detalhados de vendas",
+          },
+          {
+            icon: "fas fa-envelope",
+            title: "Email Marketing",
+            description: "Campanhas de email integradas",
+          },
+        ],
+        rating: 4.4,
+        views: 650,
+        ratings: [
+          { user: "user3", rating: 4, comment: "Bom CRM gratuito para começar.", createdAt: "2024-01-10" },
+          { user: "user7", rating: 5, comment: "Funcionalidades incríveis!", createdAt: "2024-01-05" },
+        ],
+        createdAt: "2024-01-06",
+      },
+      {
+        id: 7,
+        name: "GitHub",
+        shortDescription: "Plataforma de desenvolvimento colaborativo",
+        description:
+          "GitHub é a maior plataforma de hospedagem de código do mundo, oferecendo controle de versão Git, colaboração em equipe e ferramentas de DevOps integradas.",
+        url: "https://github.com",
+        category: "development",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-code-branch",
+            title: "Controle de Versão",
+            description: "Git integrado para versionamento",
+          },
+          {
+            icon: "fas fa-users",
+            title: "Colaboração",
+            description: "Trabalhe em equipe no mesmo código",
+          },
+          {
+            icon: "fas fa-bug",
+            title: "Issues",
+            description: "Rastreamento de bugs e tarefas",
+          },
+          {
+            icon: "fas fa-cogs",
+            title: "Actions",
+            description: "CI/CD automatizado",
+          },
+        ],
+        rating: 4.8,
+        views: 1350,
+        ratings: [
+          { user: "user4", rating: 5, comment: "Essencial para qualquer desenvolvedor!", createdAt: "2024-01-12" },
+          { user: "user8", rating: 5, comment: "Plataforma incrível para open source.", createdAt: "2024-01-04" },
+        ],
+        createdAt: "2024-01-07",
+      },
+      {
+        id: 8,
+        name: "Zoom",
+        shortDescription: "Plataforma de videoconferência e comunicação",
+        description:
+          "Zoom é uma plataforma de comunicação por vídeo que oferece videoconferências, webinars, chat e telefone em uma solução unificada para empresas de todos os tamanhos.",
+        url: "https://zoom.us",
+        category: "communication",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-video",
+            title: "Videoconferência",
+            description: "Reuniões em HD com até 100 participantes",
+          },
+          {
+            icon: "fas fa-desktop",
+            title: "Compartilhamento",
+            description: "Compartilhe tela e aplicativos",
+          },
+          {
+            icon: "fas fa-record-vinyl",
+            title: "Gravação",
+            description: "Grave reuniões na nuvem ou localmente",
+          },
+          {
+            icon: "fas fa-mobile-alt",
+            title: "Mobile",
+            description: "Apps nativos para iOS e Android",
+          },
+        ],
+        rating: 4.3,
+        views: 920,
+        ratings: [
+          { user: "user5", rating: 4, comment: "Boa qualidade de vídeo e áudio.", createdAt: "2024-01-09" },
+          { user: "user9", rating: 4, comment: "Funciona bem, mas consome bateria.", createdAt: "2024-01-03" },
+        ],
+        createdAt: "2024-01-08",
+      },
+      {
+        id: 9,
+        name: "Mailchimp",
+        shortDescription: "Plataforma de email marketing e automação",
+        description:
+          "Mailchimp é uma plataforma de marketing que ajuda empresas a criar, enviar e analisar campanhas de email, além de oferecer ferramentas de automação de marketing.",
+        url: "https://mailchimp.com",
+        category: "marketing",
+        plan: "free",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-envelope",
+            title: "Email Campaigns",
+            description: "Crie campanhas de email profissionais",
+          },
+          {
+            icon: "fas fa-robot",
+            title: "Automação",
+            description: "Fluxos de email automatizados",
+          },
+          {
+            icon: "fas fa-chart-line",
+            title: "Analytics",
+            description: "Relatórios detalhados de performance",
+          },
+          {
+            icon: "fas fa-users",
+            title: "Segmentação",
+            description: "Segmente sua audiência eficientemente",
+          },
+        ],
+        rating: 4.2,
+        views: 580,
+        ratings: [
+          { user: "user6", rating: 4, comment: "Bom para começar com email marketing.", createdAt: "2024-01-08" },
+          { user: "user10", rating: 4, comment: "Interface amigável e templates bonitos.", createdAt: "2024-01-02" },
+        ],
+        createdAt: "2024-01-09",
+      },
+      {
+        id: 10,
+        name: "QuickBooks Online",
+        shortDescription: "Software de contabilidade para pequenas empresas",
+        description:
+          "QuickBooks Online é uma solução de contabilidade baseada na nuvem que ajuda pequenas empresas a gerenciar finanças, faturas, despesas e relatórios fiscais.",
+        url: "https://quickbooks.intuit.com",
+        category: "finance",
+        plan: "pro",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-file-invoice",
+            title: "Faturamento",
+            description: "Crie e envie faturas profissionais",
+          },
+          {
+            icon: "fas fa-receipt",
+            title: "Despesas",
+            description: "Rastreie e categorize despesas",
+          },
+          {
+            icon: "fas fa-chart-pie",
+            title: "Relatórios",
+            description: "Relatórios financeiros detalhados",
+          },
+          {
+            icon: "fas fa-university",
+            title: "Integração Bancária",
+            description: "Conecte suas contas bancárias",
+          },
+        ],
+        rating: 4.1,
+        views: 420,
+        ratings: [
+          { user: "user7", rating: 4, comment: "Completo para pequenas empresas.", createdAt: "2024-01-07" },
+          { user: "user11", rating: 4, comment: "Um pouco caro, mas vale a pena.", createdAt: "2024-01-01" },
+        ],
+        createdAt: "2024-01-10",
+      },
+      {
+        id: 11,
+        name: "Adobe Creative Cloud",
+        shortDescription: "Suite completa de ferramentas criativas",
+        description:
+          "Adobe Creative Cloud é uma coleção de aplicativos de software para design gráfico, edição de vídeo, desenvolvimento web e fotografia, incluindo Photoshop, Illustrator, Premiere Pro e mais.",
+        url: "https://adobe.com/creativecloud",
+        category: "design",
+        plan: "pro",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-image",
+            title: "Photoshop",
+            description: "Edição avançada de imagens",
+          },
+          {
+            icon: "fas fa-vector-square",
+            title: "Illustrator",
+            description: "Design vetorial profissional",
+          },
+          {
+            icon: "fas fa-film",
+            title: "Premiere Pro",
+            description: "Edição de vídeo profissional",
+          },
+          {
+            icon: "fas fa-cloud",
+            title: "Cloud Storage",
+            description: "Armazenamento e sincronização",
+          },
+        ],
+        rating: 4.6,
+        views: 1150,
+        ratings: [
+          { user: "user8", rating: 5, comment: "Padrão da indústria para design!", createdAt: "2024-01-06" },
+          { user: "user12", rating: 4, comment: "Caro, mas ferramentas incríveis.", createdAt: "2024-01-01" },
+        ],
+        createdAt: "2024-01-11",
+      },
+      {
+        id: 12,
+        name: "Salesforce",
+        shortDescription: "Plataforma CRM líder mundial",
+        description:
+          "Salesforce é a plataforma de CRM número 1 do mundo, oferecendo soluções completas para vendas, atendimento ao cliente, marketing e análise de dados empresariais.",
+        url: "https://salesforce.com",
+        category: "marketing",
+        plan: "pro",
+        logo: "/placeholder.svg?height=80&width=80",
+        images: [
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+          "/placeholder.svg?height=400&width=600",
+        ],
+        features: [
+          {
+            icon: "fas fa-handshake",
+            title: "Sales Cloud",
+            description: "Automação completa de vendas",
+          },
+          {
+            icon: "fas fa-headset",
+            title: "Service Cloud",
+            description: "Atendimento ao cliente 360°",
+          },
+          {
+            icon: "fas fa-bullhorn",
+            title: "Marketing Cloud",
+            description: "Automação de marketing avançada",
+          },
+          {
+            icon: "fas fa-chart-bar",
+            title: "Analytics",
+            description: "Business intelligence integrado",
+          },
+        ],
+        rating: 4.3,
+        views: 780,
+        ratings: [
+          { user: "user9", rating: 4, comment: "Poderoso, mas complexo de configurar.", createdAt: "2024-01-05" },
+          { user: "user13", rating: 5, comment: "Melhor CRM para empresas grandes.", createdAt: "2024-01-01" },
+        ],
+        createdAt: "2024-01-12",
+      },
+    ]
+
+    localStorage.setItem("saasData", JSON.stringify(sampleSaas))
+  }
+
+  // Load SaaS data
+  allSaas = JSON.parse(localStorage.getItem("saasData")) || []
+}
+
+// SaaS data functions
+function getAllSaas() {
+  return JSON.parse(localStorage.getItem("saasData")) || []
+}
+
+function getSaasById(id) {
+  const saasData = getAllSaas()
+  return saasData.find((saas) => saas.id === Number.parseInt(id))
+}
+
+function getPopularSaas(limit = 6) {
+  const saasData = getAllSaas()
+  return saasData.sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, limit)
+}
+
+function getSaasByCategory(category, limit = null) {
+  const saasData = getAllSaas()
+  const filtered = saasData.filter((saas) => saas.category === category)
+  return limit ? filtered.slice(0, limit) : filtered
+}
+
+function getRandomSaas() {
+  const saasData = getAllSaas()
+  const randomIndex = Math.floor(Math.random() * saasData.length)
+  return saasData[randomIndex]
+}
+
+function saveSaas(saasData) {
+  localStorage.setItem("saasData", JSON.stringify(saasData))
+  allSaas = saasData
+}
+
+// User data functions
+function getUserFavorites(userId) {
+  const favorites = localStorage.getItem(`favorites_${userId}`)
+  return favorites ? JSON.parse(favorites) : []
+}
+
+function addToFavorites(userId, saasId) {
+  const favorites = getUserFavorites(userId)
+  if (!favorites.includes(saasId)) {
+    favorites.push(saasId)
+    localStorage.setItem(`favorites_${userId}`, JSON.stringify(favorites))
+  }
+}
+
+function removeFromFavorites(userId, saasId) {
+  const favorites = getUserFavorites(userId)
+  const updatedFavorites = favorites.filter((id) => id !== saasId)
+  localStorage.setItem(`favorites_${userId}`, JSON.stringify(updatedFavorites))
+}
+
+function getUserViewed(userId) {
+  const viewed = localStorage.getItem(`viewed_${userId}`)
+  return viewed ? JSON.parse(viewed) : []
+}
+
+function addToViewed(userId, saasId) {
+  const viewed = getUserViewed(userId)
+  const saasIdNum = Number.parseInt(saasId)
+
+  // Remove if already exists to move to front
+  const filtered = viewed.filter((item) => item.id !== saasIdNum)
+
+  // Add to front with timestamp
+  filtered.unshift({
+    id: saasIdNum,
+    viewedAt: new Date().toISOString(),
+  })
+
+  // Keep only last 20 viewed items
+  const limited = filtered.slice(0, 20)
+
+  localStorage.setItem(`viewed_${userId}`, JSON.stringify(limited))
+}
+
+function getUserRatings(userId) {
+  const ratings = localStorage.getItem(`ratings_${userId}`)
+  return ratings ? JSON.parse(ratings) : []
+}
+
+function addUserRating(userId, saasId, rating, comment = "") {
+  // Add to user's ratings
+  const userRatings = getUserRatings(userId)
+  const existingIndex = userRatings.findIndex((r) => r.saasId === saasId)
+
+  const ratingData = {
+    saasId: saasId,
+    rating: rating,
+    comment: comment,
+    createdAt: new Date().toISOString(),
+  }
+
+  if (existingIndex !== -1) {
+    userRatings[existingIndex] = ratingData
+  } else {
+    userRatings.push(ratingData)
+  }
+
+  localStorage.setItem(`ratings_${userId}`, JSON.stringify(userRatings))
+
+  // Update SaaS rating
+  const saasData = getAllSaas()
+  const saasIndex = saasData.findIndex((s) => s.id === Number.parseInt(saasId))
+
+  if (saasIndex !== -1) {
+    const saas = saasData[saasIndex]
+
+    // Remove existing rating from this user
+    saas.ratings = saas.ratings.filter((r) => r.user !== userId)
+
+    // Add new rating
+    saas.ratings.push({
+      user: userId,
+      rating: rating,
+      comment: comment,
+      createdAt: new Date().toISOString(),
     })
+
+    // Calculate average rating
+    const totalRating = saas.ratings.reduce((sum, r) => sum + r.rating, 0)
+    saas.rating = saas.ratings.length > 0 ? totalRating / saas.ratings.length : 0
+
+    saveSaas(saasData)
   }
 }
 
-function triggerEntranceAnimations() {
-  // Animate hero elements
-  const heroTitle = document.querySelector(".hero-title")
-  const heroDescription = document.querySelector(".hero-description")
-  const heroActions = document.querySelector(".hero-actions")
+// Plan functions
+function getUserPlan(userId) {
+  const plan = localStorage.getItem(`plan_${userId}`)
+  return plan || "free"
+}
 
-  if (typeof gsap !== "undefined") {
-    const tl = gsap.timeline()
+function setUserPlan(userId, plan) {
+  localStorage.setItem(`plan_${userId}`, plan)
+}
 
-    tl.fromTo(".title-line", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.2 })
-      .fromTo(heroDescription, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, "-=0.4")
-      .fromTo(heroActions, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, "-=0.3")
+function canAccessSaas(saas, userPlan) {
+  if (saas.plan === "free") return true
+  if (saas.plan === "pro" && userPlan === "pro") return true
+  return false
+}
+
+// Search and filter functions
+function filterSaas(saasArray, searchTerm, category, plan, sortBy) {
+  const filtered = saasArray.filter((saas) => {
+    const matchesSearch =
+      !searchTerm ||
+      saas.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      saas.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      saas.shortDescription.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesCategory = category === "all" || saas.category === category
+    const matchesPlan = plan === "all" || saas.plan === plan
+
+    return matchesSearch && matchesCategory && matchesPlan
+  })
+
+  // Sort results
+  switch (sortBy) {
+    case "name":
+      filtered.sort((a, b) => a.name.localeCompare(b.name))
+      break
+    case "rating":
+      filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      break
+    case "popular":
+      filtered.sort((a, b) => (b.views || 0) - (a.views || 0))
+      break
+    case "newest":
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      break
+    default:
+      break
   }
+
+  return filtered
 }
 
-// ===== HOME PAGE FUNCTIONALITY =====
-function initializeHomePage() {
-  // Initialize search functionality
-  initializeSearch()
-
-  // Initialize filters
-  initializeFilters()
-
-  // Load initial SaaS grid
-  loadSaasGrid()
-
-  // Initialize FAB
-  initializeFAB()
-
-  // Initialize Three.js background
-  initializeThreeJSBackground()
+// Utility functions
+function formatDate(dateString) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("pt-BR")
 }
 
-function initializeSearch() {
-  const searchInput = document.getElementById("searchInput")
-  const searchSuggestions = document.getElementById("searchSuggestions")
-
-  if (searchInput) {
-    let searchTimeout
-
-    searchInput.addEventListener("input", (event) => {
-      clearTimeout(searchTimeout)
-      const query = event.target.value.trim()
-
-      searchTimeout = setTimeout(() => {
-        AppState.searchQuery = query
-        filterSaasData()
-
-        if (query.length > 2) {
-          showSearchSuggestions(query)
-        } else {
-          hideSearchSuggestions()
-        }
-      }, 300)
-    })
-
-    searchInput.addEventListener("focus", () => {
-      if (AppState.searchQuery.length > 2) {
-        showSearchSuggestions(AppState.searchQuery)
-      }
-    })
-
-    document.addEventListener("click", (event) => {
-      if (!searchInput.contains(event.target) && !searchSuggestions?.contains(event.target)) {
-        hideSearchSuggestions()
-      }
-    })
-  }
+function formatRating(rating) {
+  return Number.parseFloat(rating).toFixed(1)
 }
 
-function showSearchSuggestions(query) {
-  const suggestions = generateSearchSuggestions(query)
-  const suggestionsContainer = document.getElementById("searchSuggestions")
+function generateStars(rating, interactive = false) {
+  const fullStars = Math.floor(rating)
+  const hasHalfStar = rating % 1 >= 0.5
+  let starsHtml = ""
 
-  if (suggestionsContainer && suggestions.length > 0) {
-    suggestionsContainer.innerHTML = suggestions
-      .map(
-        (suggestion) =>
-          `<div class="suggestion-item" onclick="applySuggestion('${suggestion}')">
-        <span class="suggestion-icon">🔍</span>
-        <span class="suggestion-text">${suggestion}</span>
-      </div>`,
-      )
-      .join("")
-
-    suggestionsContainer.classList.add("visible")
-  }
-}
-
-function hideSearchSuggestions() {
-  const suggestionsContainer = document.getElementById("searchSuggestions")
-  if (suggestionsContainer) {
-    suggestionsContainer.classList.remove("visible")
-  }
-}
-
-function generateSearchSuggestions(query) {
-  const suggestions = []
-  const categories = ["productivity", "design", "marketing", "development"]
-  const popularTerms = ["IA", "colaboração", "automação", "design", "código"]
-
-  // Add category suggestions
-  categories.forEach((category) => {
-    if (category.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.push(category)
+  for (let i = 1; i <= 5; i++) {
+    if (i <= fullStars) {
+      starsHtml += `<i class="fas fa-star${interactive ? '" data-rating="' + i : ""}"></i>`
+    } else if (i === fullStars + 1 && hasHalfStar) {
+      starsHtml += `<i class="fas fa-star-half-alt${interactive ? '" data-rating="' + i : ""}"></i>`
+    } else {
+      starsHtml += `<i class="far fa-star${interactive ? '" data-rating="' + i : ""}"></i>`
     }
-  })
+  }
 
-  // Add popular term suggestions
-  popularTerms.forEach((term) => {
-    if (term.toLowerCase().includes(query.toLowerCase())) {
-      suggestions.push(term)
-    }
-  })
-
-  return suggestions.slice(0, 5)
+  return starsHtml
 }
 
-function applySuggestion(suggestion) {
-  const searchInput = document.getElementById("searchInput")
-  if (searchInput) {
-    searchInput.value = suggestion
-    AppState.searchQuery = suggestion
-    filterSaasData()
-    hideSearchSuggestions()
+function getCategoryIcon(category) {
+  const icons = {
+    productivity: "fas fa-tasks",
+    marketing: "fas fa-bullhorn",
+    finance: "fas fa-chart-line",
+    design: "fas fa-palette",
+    development: "fas fa-code",
+    communication: "fas fa-comments",
   }
-}
-
-function initializeFilters() {
-  // Category filters
-  const categoryFilters = document.querySelectorAll(".filter-pill")
-  categoryFilters.forEach((filter) => {
-    filter.addEventListener("click", () => {
-      // Remove active class from all filters
-      categoryFilters.forEach((f) => f.classList.remove("active"))
-      // Add active class to clicked filter
-      filter.classList.add("active")
-
-      const category = filter.dataset.category
-      AppState.activeFilters.category = category
-      filterSaasData()
-    })
-  })
-
-  // Advanced filters toggle
-  const advancedToggle = document.getElementById("advancedToggle")
-  const advancedFilters = document.getElementById("advancedFilters")
-
-  if (advancedToggle && advancedFilters) {
-    advancedToggle.addEventListener("click", () => {
-      advancedFilters.classList.toggle("visible")
-      advancedToggle.classList.toggle("active")
-    })
-  }
-
-  // Price filters
-  const priceOptions = document.querySelectorAll(".price-option")
-  priceOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      priceOptions.forEach((o) => o.classList.remove("active"))
-      option.classList.add("active")
-
-      AppState.activeFilters.price = option.dataset.price
-      filterSaasData()
-    })
-  })
-}
-
-function filterSaasData() {
-  let filtered = [...AppState.saasData]
-
-  // Apply search filter
-  if (AppState.searchQuery) {
-    filtered = filtered.filter(
-      (saas) =>
-        saas.name.toLowerCase().includes(AppState.searchQuery.toLowerCase()) ||
-        saas.description.toLowerCase().includes(AppState.searchQuery.toLowerCase()) ||
-        saas.tags.some((tag) => tag.toLowerCase().includes(AppState.searchQuery.toLowerCase())),
-    )
-  }
-
-  // Apply category filter
-  if (AppState.activeFilters.category !== "all") {
-    filtered = filtered.filter((saas) => saas.category === AppState.activeFilters.category)
-  }
-
-  // Apply price filter
-  if (AppState.activeFilters.price !== "all") {
-    filtered = filtered.filter((saas) => saas.price === AppState.activeFilters.price)
-  }
-
-  AppState.filteredSaas = filtered
-  loadSaasGrid()
-}
-
-function loadSaasGrid() {
-  const saasGrid = document.getElementById("saasGrid")
-  if (!saasGrid) return
-
-  if (AppState.filteredSaas.length === 0) {
-    saasGrid.innerHTML = `
-      <div class="no-results">
-        <div class="no-results-icon">🔍</div>
-        <h3>Nenhum SaaS encontrado</h3>
-        <p>Tente ajustar os filtros ou termos de busca</p>
-        <button class="btn btn-primary" onclick="clearFilters()">Limpar Filtros</button>
-      </div>
-    `
-    return
-  }
-
-  saasGrid.innerHTML = AppState.filteredSaas.map((saas) => createSaasCard(saas)).join("")
-
-  // Animate cards entrance
-  if (typeof gsap !== "undefined") {
-    gsap.fromTo(".saas-card", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 })
-  }
-}
-
-function createSaasCard(saas) {
-  return `
-    <div class="saas-card" onclick="openSaasDetail(${saas.id})">
-      ${saas.isPremium ? '<div class="premium-badge">Premium</div>' : ""}
-      <div class="card-header">
-        <div class="card-logo">
-          <img src="${saas.logo}" alt="${saas.name}" onerror="this.style.display='none'">
-        </div>
-        <div class="card-info">
-          <h3 class="card-title">${saas.name}</h3>
-          <span class="card-category">${getCategoryName(saas.category)}</span>
-        </div>
-      </div>
-      <p class="card-description">${saas.description}</p>
-      <div class="card-footer">
-        <div class="card-rating">
-          <div class="rating-stars">
-            ${generateStars(saas.rating)}
-          </div>
-          <span class="rating-value">${saas.rating} (${saas.reviews})</span>
-        </div>
-        <div class="card-actions">
-          <button class="card-btn" onclick="event.stopPropagation(); toggleFavorite(${saas.id})">
-            ❤️
-          </button>
-          <a href="${saas.url}" class="card-btn primary" target="_blank" onclick="event.stopPropagation()">
-            Acessar
-          </a>
-        </div>
-      </div>
-    </div>
-  `
+  return icons[category] || "fas fa-cube"
 }
 
 function getCategoryName(category) {
-  const categories = {
+  const names = {
     productivity: "Produtividade",
-    design: "Design",
     marketing: "Marketing",
+    finance: "Finanças",
+    design: "Design",
     development: "Desenvolvimento",
+    communication: "Comunicação",
   }
-  return categories[category] || category
+  return names[category] || category
 }
 
-function generateStars(rating) {
-  const fullStars = Math.floor(rating)
-  const hasHalfStar = rating % 1 >= 0.5
-  let stars = ""
-
-  for (let i = 0; i < fullStars; i++) {
-    stars += "⭐"
+// Navigation functions
+function goToRandomSaas() {
+  const randomSaas = getRandomSaas()
+  if (randomSaas) {
+    window.location.href = `saas-detail.html?id=${randomSaas.id}`
   }
-
-  if (hasHalfStar) {
-    stars += "⭐"
-  }
-
-  return stars
 }
 
-function clearFilters() {
-  AppState.searchQuery = ""
-  AppState.activeFilters = {
-    category: "all",
-    price: "all",
-    rating: 0,
-  }
+// Mobile menu functions
+function initializeMobileMenu() {
+  const mobileToggle = document.getElementById("mobileToggle")
+  const navLinks = document.getElementById("navLinks")
 
-  // Reset UI
-  const searchInput = document.getElementById("searchInput")
-  if (searchInput) searchInput.value = ""
-
-  const categoryFilters = document.querySelectorAll(".filter-pill")
-  categoryFilters.forEach((filter) => {
-    filter.classList.remove("active")
-    if (filter.dataset.category === "all") {
-      filter.classList.add("active")
-    }
-  })
-
-  const priceOptions = document.querySelectorAll(".price-option")
-  priceOptions.forEach((option) => {
-    option.classList.remove("active")
-    if (option.dataset.price === "all") {
-      option.classList.add("active")
-    }
-  })
-
-  filterSaasData()
-}
-
-// ===== FAB (Floating Action Button) =====
-function initializeFAB() {
-  const fabMain = document.getElementById("fabMain")
-  const fabMenu = document.getElementById("fabMenu")
-
-  if (fabMain && fabMenu) {
-    fabMain.addEventListener("click", () => {
-      fabMenu.classList.toggle("visible")
-      fabMain.classList.toggle("active")
-    })
-
-    // Close FAB menu when clicking outside
-    document.addEventListener("click", (event) => {
-      if (!fabMain.contains(event.target) && !fabMenu.contains(event.target)) {
-        fabMenu.classList.remove("visible")
-        fabMain.classList.remove("active")
-      }
+  if (mobileToggle && navLinks) {
+    mobileToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("active")
     })
   }
 }
 
-function scrollToTop() {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  })
-}
+// Dropdown functions
+function initializeDropdowns() {
+  const dropdowns = document.querySelectorAll(".dropdown")
 
-// ===== THREE.JS BACKGROUND =====
-const THREE = window.THREE
+  dropdowns.forEach((dropdown) => {
+    const btn = dropdown.querySelector(".dropdown-btn")
+    const content = dropdown.querySelector(".dropdown-content")
 
-function initializeThreeJSBackground() {
-  if (typeof THREE === "undefined") return
+    if (btn && content) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation()
 
-  const canvas = document.getElementById("heroCanvas")
-  if (!canvas) return
+        // Close other dropdowns
+        dropdowns.forEach((other) => {
+          if (other !== dropdown) {
+            other.classList.remove("active")
+          }
+        })
 
-  const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
-
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setClearColor(0x000000, 0)
-
-  // Create floating particles
-  const particlesGeometry = new THREE.BufferGeometry()
-  const particlesCount = 100
-  const posArray = new Float32Array(particlesCount * 3)
-
-  for (let i = 0; i < particlesCount * 3; i++) {
-    posArray[i] = (Math.random() - 0.5) * 10
-  }
-
-  particlesGeometry.setAttribute("position", new THREE.BufferAttribute(posArray, 3))
-
-  const particlesMaterial = new THREE.PointsMaterial({
-    size: 0.005,
-    color: 0x00d4ff,
-    transparent: true,
-    opacity: 0.8,
-  })
-
-  const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial)
-  scene.add(particlesMesh)
-
-  camera.position.z = 3
-
-  // Animation loop
-  function animate() {
-    requestAnimationFrame(animate)
-
-    particlesMesh.rotation.x += 0.001
-    particlesMesh.rotation.y += 0.002
-
-    renderer.render(scene, camera)
-  }
-
-  animate()
-
-  // Handle window resize
-  window.addEventListener("resize", () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-  })
-}
-
-function toggleFavorite(saasId) {
-  if (window.FavoritesSystem && window.FavoritesSystem.toggleFavorite) {
-    window.FavoritesSystem.toggleFavorite(saasId)
-  } else {
-    console.log("Favorite toggled for SaaS:", saasId)
-    if (window.SaaSHub && window.SaaSHub.showNotification) {
-      window.SaaSHub.showNotification("Sistema de favoritos carregando...", "info")
+        // Toggle current dropdown
+        dropdown.classList.toggle("active")
+      })
     }
-  }
+  })
+
+  // Close dropdowns when clicking outside
+  document.addEventListener("click", () => {
+    dropdowns.forEach((dropdown) => {
+      dropdown.classList.remove("active")
+    })
+  })
 }
 
-// ===== NOTIFICATION SYSTEM =====
-function showNotification(message, type = "info", duration = 5000) {
-  const container = document.getElementById("notificationContainer")
-  if (!container) return
-
+// Notification functions
+function showNotification(message, type = "success") {
+  // Create notification element
   const notification = document.createElement("div")
-  notification.className = `notification ${type}`
-
-  const icons = {
-    success: "✅",
-    error: "❌",
-    info: "ℹ️",
-    warning: "⚠️",
-  }
-
+  notification.className = `notification notification-${type}`
   notification.innerHTML = `
-    <div class="notification-content">
-      <div class="notification-icon">${icons[type] || icons.info}</div>
-      <div class="notification-text">
-        <div class="notification-message">${message}</div>
-      </div>
-    </div>
-    <button class="notification-close" onclick="this.parentElement.remove()">✕</button>
-  `
+        <div class="notification-content">
+            <i class="fas ${type === "success" ? "fa-check-circle" : "fa-exclamation-circle"}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `
 
-  container.appendChild(notification)
+  // Add to page
+  document.body.appendChild(notification)
 
-  // Trigger entrance animation
+  // Auto remove after 5 seconds
   setTimeout(() => {
-    notification.classList.add("visible")
-  }, 100)
-
-  // Auto remove
-  setTimeout(() => {
-    notification.classList.remove("visible")
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove()
-      }
-    }, 300)
-  }, duration)
-}
-
-// ===== NAVIGATION FUNCTIONS =====
-function navigateToLogin() {
-  window.location.href = "login.html"
-}
-
-function navigateToRegister() {
-  window.location.href = "login.html?mode=register"
-}
-
-function navigateToDashboard() {
-  if (AppState.currentUser) {
-    const dashboardUrl = AppState.currentUser.type === "developer" ? "dashboard-dev.html" : "dashboard-user.html"
-    window.location.href = dashboardUrl
-  }
-}
-
-function navigateToSubmit() {
-  if (AppState.currentUser) {
-    window.location.href = "submit-saas.html"
-  } else {
-    showNotification("Faça login para enviar um SaaS", "warning")
-    navigateToLogin()
-  }
-}
-
-function openSaasDetail(saasId) {
-  window.location.href = `saas-detail.html?id=${saasId}`
-}
-
-function toggleFavorite(saasId) {
-  if (!AppState.currentUser) {
-    showNotification("Faça login para favoritar SaaS", "warning")
-    return
-  }
-
-  // Check if already favorited
-  const favoriteBtn = event.target
-  const isFavorited = favoriteBtn.classList.contains('favorited')
-  
-  if (isFavorited) {
-    // Remove from favorites
-    firebaseService.removeFromFavorites(AppState.currentUser.uid, saasId)
-      .then(() => {
-        favoriteBtn.classList.remove('favorited')
-        favoriteBtn.innerHTML = '🤍'
-        showNotification("SaaS removido dos favoritos", "info")
-      })
-      .catch((error) => {
-        console.error("Error removing favorite:", error)
-        showNotification("Erro ao remover dos favoritos", "error")
-      })
-  } else {
-    // Add to favorites
-    firebaseService.addToFavorites(AppState.currentUser.uid, saasId)
-      .then(() => {
-        favoriteBtn.classList.add('favorited')
-        favoriteBtn.innerHTML = '❤️'
-        showNotification("SaaS adicionado aos favoritos", "success")
-      })
-      .catch((error) => {
-        console.error("Error adding favorite:", error)
-        showNotification("Erro ao adicionar aos favoritos", "error")
-      })
-  }
-}
-
-// ===== FIREBASE HELPER FUNCTIONS =====
-async function loadFeaturedSaas() {
-  try {
-    const featuredSaas = await firebaseService.getFeaturedSaas()
-    return featuredSaas
-  } catch (error) {
-    console.error("Error loading featured SaaS:", error)
-    return []
-  }
-}
-
-async function loadSaasByCategory(category) {
-  try {
-    const categoryFilter = category === 'all' ? null : category
-    const saasList = categoryFilter 
-      ? await firebaseService.getSaasByCategory(category)
-      : await firebaseService.getAllSaas()
-    return saasList
-  } catch (error) {
-    console.error("Error loading SaaS by category:", error)
-    return []
-  }
-}
-
-async function addReview(saasId, rating, comment) {
-  if (!AppState.currentUser) {
-    showNotification("Faça login para avaliar", "warning")
-    return false
-  }
-
-  try {
-    await firebaseService.addReview(AppState.currentUser.uid, saasId, rating, comment)
-    showNotification("Avaliação adicionada com sucesso", "success")
-    return true
-  } catch (error) {
-    console.error("Error adding review:", error)
-    showNotification("Erro ao adicionar avaliação", "error")
-    return false
-  }
-}
-
-async function loadUserFavorites() {
-  if (!AppState.currentUser) return []
-
-  try {
-    const favorites = await firebaseService.getUserFavorites(AppState.currentUser.uid)
-    return favorites.map(fav => fav.saasId)
-  } catch (error) {
-    console.error("Error loading user favorites:", error)
-    return []
-  }
-}
-
-// Clean up Firebase listeners when leaving the page
-window.addEventListener('beforeunload', () => {
-  AppState.unsubscribeFunctions.forEach(unsubscribe => {
-    if (typeof unsubscribe === 'function') {
-      unsubscribe()
+    if (notification.parentElement) {
+      notification.remove()
     }
-  })
-})
+  }, 5000)
+}
 
-// ===== KEYBOARD SHORTCUTS =====
-document.addEventListener("keydown", (event) => {
-  // Alt + H - Home
-  if (event.altKey && event.key === "h") {
-    event.preventDefault()
-    scrollToSection("home")
-  }
+// Add notification styles
+const notificationStyles = `
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 300px;
+    animation: slideInRight 0.3s ease-out;
+}
 
-  // Alt + C - Catalog
-  if (event.altKey && event.key === "c") {
-    event.preventDefault()
-    scrollToSection("catalog")
-  }
+.notification-success {
+    border-left: 4px solid var(--accent-color);
+}
 
-  // Alt + A - About
-  if (event.altKey && event.key === "a") {
-    event.preventDefault()
-    scrollToSection("about")
-  }
+.notification-error {
+    border-left: 4px solid var(--danger-color);
+}
 
-  // Escape - Close modals/menus
-  if (event.key === "Escape") {
-    const fabMenu = document.getElementById("fabMenu")
-    const fabMain = document.getElementById("fabMain")
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    if (fabMenu?.classList.contains("visible")) {
-      fabMenu.classList.remove("visible")
-      fabMain?.classList.remove("active")
+.notification-success .notification-content i {
+    color: var(--accent-color);
+}
+
+.notification-error .notification-content i {
+    color: var(--danger-color);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    padding: 0.25rem;
+}
+
+.notification-close:hover {
+    color: var(--text-primary);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
     }
-
-    hideSearchSuggestions()
-  }
-
-  // Ctrl/Cmd + K - Focus search
-  if ((event.ctrlKey || event.metaKey) && event.key === "k") {
-    event.preventDefault()
-    const searchInput = document.getElementById("searchInput")
-    if (searchInput) {
-      searchInput.focus()
-      scrollToSection("catalog")
+    to {
+        transform: translateX(0);
+        opacity: 1;
     }
-  }
-})
+}
+`
 
-// ===== EXPORT FOR GLOBAL ACCESS =====
-window.SaaSHub = {
-  AppState,
-  showNotification,
-  scrollToSection,
-  navigateToLogin,
-  navigateToRegister,
-  navigateToDashboard,
-  navigateToSubmit,
-  openSaasDetail,
-  toggleFavorite,
-  toggleVoiceCommand,
-  scrollToTop,
-  clearFilters,
+// Add notification styles to head
+const styleSheet = document.createElement("style")
+styleSheet.textContent = notificationStyles
+document.head.appendChild(styleSheet)
+
+// Export functions for global use
+window.SaaSFY = {
+  getCurrentUser,
+  setCurrentUser,
   logout,
-
+  getAllSaas,
+  getSaasById,
+  getPopularSaas,
+  getSaasByCategory,
+  getRandomSaas,
+  getUserFavorites,
+  addToFavorites,
+  removeFromFavorites,
+  getUserViewed,
+  addToViewed,
+  getUserRatings,
+  addUserRating,
+  getUserPlan,
+  setUserPlan,
+  canAccessSaas,
+  filterSaas,
+  formatDate,
+  formatRating,
+  generateStars,
+  getCategoryIcon,
+  getCategoryName,
+  goToRandomSaas,
+  showNotification,
 }
-
-console.log("🎯 SaaSHub Main Module Loaded")
