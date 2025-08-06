@@ -6,6 +6,9 @@
     <title>SaaSFY - Descubra os Melhores SaaS</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- AOS - Animate On Scroll -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </head>
 <body>
        <!--Header-->
@@ -13,22 +16,38 @@
 
     <!-- Hero Section -->
     <section class="hero">
+        <!-- 7 Floating clouds replacing particles -->
+        <div class="background-clouds">
+            <i class="fas fa-cloud cloud-bg-1"></i>
+            <i class="fas fa-cloud cloud-bg-2"></i>
+            <i class="fas fa-cloud cloud-bg-3"></i>
+            <i class="fas fa-cloud cloud-bg-4"></i>
+            <i class="fas fa-cloud cloud-bg-5"></i>
+            <i class="fas fa-cloud cloud-bg-6"></i>
+            <i class="fas fa-cloud cloud-bg-7"></i>
+            <i class="fas fa-cloud cloud-bg-8"></i>
+            <i class="fas fa-cloud cloud-bg-9"></i>
+            <i class="fas fa-cloud cloud-bg-10"></i>
+            <i class="fas fa-cloud cloud-bg-11"></i>
+            <i class="fas fa-cloud cloud-bg-12"></i>
+        </div>
+        
         <div class="container">
-            <div class="hero-content">
-                <h1>Descubra e Acesse os Melhores SaaS em um Só Lugar</h1>
-                <p>Uma plataforma completa onde você pode encontrar, testar e usar diversos SaaS. Desenvolvedores também podem cadastrar suas soluções e alcançar mais usuários.</p>
-                <div class="hero-buttons">
+            <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
+                <h1 data-aos="fade-up" data-aos-delay="200">Descubra e Acesse os Melhores SaaS em um Só Lugar</h1>
+                <p data-aos="fade-up" data-aos-delay="400">Uma plataforma completa onde você pode encontrar, testar e usar diversos SaaS. Desenvolvedores também podem cadastrar suas soluções e alcançar mais usuários.</p>
+                <div class="hero-buttons" data-aos="fade-up" data-aos-delay="600">
                     <a href="catalog.html" class="btn btn-primary btn-large">Explorar Catálogo</a>
                     <a href="login.html?mode=register&type=developer" class="btn btn-outline btn-large">Sou Desenvolvedor</a>
                 </div>
             </div>
-            <div class="hero-image">
+            <div class="hero-image" data-aos="zoom-in" data-aos-delay="800">
                 <i class="fas fa-cloud fa-10x"></i>
             </div>
         </div>
     </section>
 
-    <!-- Popular SaaS Section -->   
+    <!-- Popular SaaS Section -->
     <section class="popular-saas">
         <div class="container">
             <div class="section-header">
@@ -173,5 +192,14 @@
     <script src="assets/js/header.js"></script>
     <script src="assets/js/main.js"></script>   
     <script src="assets/js/home.js"></script>
+    
+    <!-- Initialize AOS animations -->
+    <script>
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
 </body>
 </html>
