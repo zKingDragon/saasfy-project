@@ -48,6 +48,10 @@ body {
   margin-bottom: 10%;
 }
 
+.logoImg {
+  
+}
+
 .nav {
   display: flex;
   justify-content: space-between;
