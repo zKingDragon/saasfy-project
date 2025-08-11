@@ -65,6 +65,14 @@ function initializeUserTypeSelector() {
       developerFields.forEach((field) => {
         field.style.display = isDeveloper ? "block" : "none"
       })
+
+      // Limpa o campo empresa se não for dev
+      if (!isDeveloper) {
+        developerFields.forEach((field) => {
+          const input = field.querySelector('input')
+          if (input) input.value = ''
+        })
+      }
     })
   })
 }
@@ -95,8 +103,13 @@ function handleRegister() {
   const email = document.getElementById("registerEmail").value
   const password = document.getElementById("registerPassword").value
   const confirmPassword = document.getElementById("confirmPassword").value
-  const company = document.getElementById("company").value
-  const userType = document.querySelector(".type-btn.active").dataset.type
+  const userTypeBtn = document.querySelector(".type-btn.active")
+  const userType = userTypeBtn ? userTypeBtn.dataset.type : "user"
+  let company = null
+  if (userType === "developer") {
+    const companyInput = document.getElementById("company")
+    company = companyInput ? companyInput.value : null
+  }
 
   // Validation
   if (password !== confirmPassword) {

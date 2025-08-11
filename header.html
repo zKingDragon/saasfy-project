@@ -3,11 +3,10 @@
         <div class="nav">
             <div class="logo">
                 <a href="index.html">
-                    <img src="assets/img/LogoSaasFY.jpeg" alt="SaaSFY Logo" class="logoImg">
+                    <img src="assets/img/LogoSaasFY.png" alt="SaaSFY Logo" class="logoImg">
                 </a>
             </div>
             <div class="nav-links" id="navLinks">
-                <a href="index.html" class="active">Início</a>
                 <a href="catalog.html">Catálogo</a>
                 <a href="#" onclick="goToRandomSaas()" class="random-btn">
                     <i class="fas fa-random"></i> SaaS Aleatório
@@ -19,6 +18,8 @@
                 <div class="user-menu" id="userMenu" style="display: none;">
                     <div class="dropdown">
                         <button class="dropdown-btn" id="userDropdown">
+                            <span id="userAvatar" style="display:none;"></span>
+                            <span id="userGreeting" style="margin-right:0.5em;"></span>
                             <i class="fas fa-user"></i>
                             <span id="userName">Usuário</span>
                             <i class="fas fa-chevron-down"></i>

@@ -49,7 +49,16 @@ body {
 }
 
 .logoImg {
-  
+  height: 40px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  transition: var(--transition);
+}
+
+.logoImg:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
 
 .nav {
@@ -68,6 +77,8 @@ body {
 .logo a {
   text-decoration: none;
   color: inherit;
+  display: inline-block;
+  line-height: 0;
 }
 
 .nav-links {
@@ -191,13 +202,14 @@ body {
   opacity: 0.15;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  animation-fill-mode: both; /* apply initial keyframe (opacity:0) before start */
 }
 
 /* Background cloud positions and animations */
 .cloud-bg-1 {
   font-size: 2.2rem;
   top: 8%;
-  left: -12%;
+  left: -2%;
   animation: drift-right 21s linear infinite;
   animation-delay: 0s;
   opacity: 0.12;
@@ -208,9 +220,9 @@ body {
 .cloud-bg-2 {
   font-size: 1.4rem;
   top: 28%;
-  left: -18%;
+  left: -3%;
   animation: drift-right 33s linear infinite;
-  animation-delay: 4s;
+  animation-delay: 1s;
   opacity: 0.12;
   animation-name: drift-right-bg-2;
   filter: opacity(0.30);
@@ -219,9 +231,9 @@ body {
 .cloud-bg-3 {
   font-size: 3.6rem;
   top: 55%;
-  left: -10%;
+  left: -2%;
   animation: drift-right 19s linear infinite;
-  animation-delay: 7s;
+  animation-delay: 2s;
   opacity: 0.12;
   animation-name: drift-right-bg-3;
   filter: opacity(0.30);
@@ -230,9 +242,9 @@ body {
 .cloud-bg-4 {
   font-size: 2.8rem;
   top: 75%;
-  left: -6%;
+  left: -1%;
   animation: drift-right 29s linear infinite;
-  animation-delay: 13s;
+  animation-delay: 3s;
   opacity: 0.12;
   animation-name: drift-right-bg-4;
   filter: opacity(0.30);
@@ -241,9 +253,9 @@ body {
 .cloud-bg-5 {
   font-size: 1.7rem;
   top: 18%;
-  left: -20%;
+  left: -4%;
   animation: drift-right 37s linear infinite;
-  animation-delay: 2s;
+  animation-delay: 1s;
   opacity: 0.12;
   animation-name: drift-right-bg-5;
   filter: opacity(0.30);
@@ -252,9 +264,9 @@ body {
 .cloud-bg-6 {
   font-size: 2.9rem;
   top: 42%;
-  left: -16%;
+  left: -3%;
   animation: drift-right 24s linear infinite;
-  animation-delay: 10s;
+  animation-delay: 2s;
   opacity: 0.12;
   animation-name: drift-right-bg-6;
   filter: opacity(0.30);
@@ -263,9 +275,9 @@ body {
 .cloud-bg-7 {
   font-size: 1.2rem;
   top: 68%;
-  left: -22%;
+  left: -4%;
   animation: drift-right 36s linear infinite;
-  animation-delay: 15s;
+  animation-delay: 3s;
   opacity: 0.12;
   animation-name: drift-right-bg-7;
   filter: opacity(0.30);
@@ -274,9 +286,9 @@ body {
 .cloud-bg-8 {
   font-size: 2.5rem;
   top: 33%;
-  left: -8%;
+  left: -2%;
   animation: drift-right 23s linear infinite;
-  animation-delay: 6s;
+  animation-delay: 2s;
   opacity: 0.12;
   animation-name: drift-right-bg-8;
   filter: opacity(0.30);
@@ -285,9 +297,9 @@ body {
 .cloud-bg-9 {
   font-size: 3.1rem;
   top: 63%;
-  left: -24%;
+  left: -5%;
   animation: drift-right 27s linear infinite;
-  animation-delay: 11s;
+  animation-delay: 3s;
   opacity: 0.12;
   animation-name: drift-right-bg-9;
   filter: opacity(0.30);
@@ -296,9 +308,9 @@ body {
 .cloud-bg-10 {
   font-size: 1.6rem;
   top: 48%;
-  left: -11%;
+  left: -2%;
   animation: drift-right 31s linear infinite;
-  animation-delay: 9s;
+  animation-delay: 2s;
   opacity: 0.12;
   animation-name: drift-right-bg-10;
   filter: opacity(0.30);
@@ -307,9 +319,9 @@ body {
 .cloud-bg-11 {
   font-size: 2.7rem;
   top: 82%;
-  left: -28%;
+  left: -5%;
   animation: drift-right 25s linear infinite;
-  animation-delay: 17s;
+  animation-delay: 4s;
   opacity: 0.12;
   animation-name: drift-right-bg-11;
   filter: opacity(0.30);
@@ -318,9 +330,9 @@ body {
 .cloud-bg-12 {
   font-size: 1.1rem;
   top: 23%;
-  left: -16%;
+  left: -3%;
   animation: drift-right 34s linear infinite;
-  animation-delay: 14s;
+  animation-delay: 3s;
   opacity: 0.12;
   animation-name: drift-right-bg-12;
   filter: opacity(0.30);
@@ -547,6 +559,9 @@ body {
   color: white;
   padding: 3rem 0;
   text-align: center;
+  position: relative; /* needed so .background-clouds is scoped */
+  overflow: hidden;   /* hide clouds when drifting out */
+  min-height: 40vh;   /* similar visual height to hero */
 }
 
 .page-header h1 {
@@ -557,6 +572,12 @@ body {
 .page-header p {
   font-size: 1.125rem;
   opacity: 0.9;
+}
+
+/* Ensure content stays above animated background clouds */
+.page-header .container {
+  position: relative;
+  z-index: 2;
 }
 
 /* Popular SaaS Section */
@@ -730,6 +751,7 @@ body {
   padding: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
+  color: var(--text-light);
   background: var(--background);
   font-size: 0.875rem;
   min-width: 120px;
@@ -761,6 +783,7 @@ body {
   width: 36px;
   height: 36px;
   border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   background: var(--background);
   border-radius: var(--border-radius);
   display: flex;
@@ -1200,6 +1223,7 @@ body {
   width: 40px;
   height: 40px;
   border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   background: var(--background);
   border-radius: var(--border-radius);
   display: flex;
@@ -1332,6 +1356,9 @@ body {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  animation: modal-pop 0.18s ease-out;
 }
 
 .modal-header {
@@ -1340,6 +1367,7 @@ body {
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
 }
 
 .modal-header h2 {
@@ -1374,6 +1402,63 @@ body {
   gap: 1rem;
   padding: 1.5rem;
   border-top: 1px solid var(--border-color);
+  background: linear-gradient(0deg, rgba(255,255,255,0.02), transparent);
+  position: sticky;
+  bottom: 0;
+}
+
+/* Modal form refinements */
+.modal-content form {
+  padding: 1.25rem 1.5rem 0.25rem;
+}
+
+.modal-content .form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.modal-content .form-group:focus-within {
+  background: var(--background-secondary);
+  border-radius: calc(var(--border-radius) - 2px);
+  transition: var(--transition);
+}
+
+.modal-content .form-group label {
+  color: var(--text-primary);
+}
+
+.modal-content .form-group input,
+.modal-content .form-group select,
+.modal-content .form-group textarea {
+  background-color: rgba(255,255,255,0.02);
+}
+
+.modal-content .form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.modal-content.small {
+  max-width: 420px;
+}
+
+/* Subtle scrollbar for overflowing modal */
+.modal-content::-webkit-scrollbar {
+  width: 10px;
+}
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+@keyframes modal-pop {
+  from { transform: translateY(6px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .rating-section {
@@ -1700,6 +1785,11 @@ body {
     padding: 0 1rem;
   }
 
+  .logoImg {
+    height: 35px;
+    max-width: 120px;
+  }
+
   .mobile-menu-toggle {
     display: block;
   }
@@ -1783,6 +1873,10 @@ body {
   .modal-content {
     width: 95%;
     margin: 1rem;
+  }
+
+  .modal-content .form-row {
+    grid-template-columns: 1fr;
   }
 
   .modal-actions {

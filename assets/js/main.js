@@ -51,11 +51,32 @@ function updateAuthUI() {
   const userMenu = document.getElementById("userMenu")
   const userName = document.getElementById("userName")
   const dashboardLink = document.getElementById("dashboardLink")
+  const userGreeting = document.getElementById("userGreeting")
+  const userAvatar = document.getElementById("userAvatar")
 
   if (currentUser) {
     if (authButtons) authButtons.style.display = "none"
     if (userMenu) userMenu.style.display = "block"
     if (userName) userName.textContent = currentUser.name
+
+    // Saudação personalizada
+    if (userGreeting) {
+      let greet = "Olá, "
+      if (currentUser.type === "developer") greet = "Dev "
+      userGreeting.textContent = greet
+      userGreeting.style.display = "inline"
+    }
+
+    // Avatar
+    if (userAvatar) {
+      if (currentUser.avatar) {
+        userAvatar.innerHTML = `<img src="${currentUser.avatar}" alt="avatar" style="width:28px;height:28px;border-radius:50%;margin-right:0.5em;vertical-align:middle;">`
+        userAvatar.style.display = "inline"
+      } else {
+        userAvatar.innerHTML = ""
+        userAvatar.style.display = "none"
+      }
+    }
 
     // Set dashboard link based on user type
     if (dashboardLink) {
@@ -68,6 +89,8 @@ function updateAuthUI() {
   } else {
     if (authButtons) authButtons.style.display = "flex"
     if (userMenu) userMenu.style.display = "none"
+    if (userGreeting) userGreeting.style.display = "none"
+    if (userAvatar) userAvatar.style.display = "none"
   }
 }
 
@@ -673,6 +696,73 @@ function saveSaas(saasData) {
   allSaas = saasData
 }
 
+// Create a new SaaS entry
+function addSaas(data) {
+  const saasData = getAllSaas()
+  const nextId = saasData.length > 0 ? Math.max(...saasData.map((s) => s.id)) + 1 : 1
+
+  const newSaas = {
+    id: nextId,
+    name: data.name,
+    shortDescription: data.shortDescription || "",
+    description: data.description,
+    url: data.url,
+    category: data.category,
+    plan: data.plan || "free",
+    integration: data.integration || "redirect",
+    logo: data.logo || "/placeholder.svg?height=80&width=80",
+    icon: data.icon || null,
+    images: Array.isArray(data.images) ? data.images : [],
+    features: Array.isArray(data.features) ? data.features : [],
+    developer: data.developer,
+    rating: 0,
+    ratings: [],
+    views: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+
+  saasData.push(newSaas)
+  saveSaas(saasData)
+  return newSaas
+}
+
+// Update an existing SaaS entry by id
+function updateSaas(id, data) {
+  const saasData = getAllSaas()
+  const index = saasData.findIndex((s) => s.id === Number.parseInt(id))
+  if (index === -1) return null
+
+  const current = saasData[index]
+  const updated = {
+    ...current,
+    name: data.name ?? current.name,
+    shortDescription: data.shortDescription ?? current.shortDescription ?? "",
+    description: data.description ?? current.description,
+    url: data.url ?? current.url,
+    category: data.category ?? current.category,
+    plan: data.plan ?? current.plan,
+    integration: data.integration ?? current.integration,
+    logo: data.logo ?? current.logo,
+    icon: data.icon ?? current.icon,
+    images: Array.isArray(data.images) ? data.images : current.images || [],
+    features: Array.isArray(data.features) ? data.features : current.features || [],
+    developer: current.developer, // keep original developer
+    updatedAt: new Date().toISOString(),
+  }
+
+  saasData[index] = updated
+  saveSaas(saasData)
+  return updated
+}
+
+// Delete a SaaS by id
+function deleteSaas(id) {
+  const saasData = getAllSaas()
+  const filtered = saasData.filter((s) => s.id !== Number.parseInt(id))
+  saveSaas(filtered)
+}
+
 // User data functions
 function getUserFavorites(userId) {
   const favorites = localStorage.getItem(`favorites_${userId}`)
@@ -1031,6 +1121,9 @@ window.SaaSFY = {
   getPopularSaas,
   getSaasByCategory,
   getRandomSaas,
+  addSaas,
+  updateSaas,
+  deleteSaas,
   getUserFavorites,
   addToFavorites,
   removeFromFavorites,

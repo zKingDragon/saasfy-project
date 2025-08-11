@@ -2,7 +2,7 @@
 let editingSaasId = null
 let deletingSaasId = null
 
-const SaaSFY = {} // Declare the SaaSFY variable here
+const SaaSFY = window.SaaSFY // Use global SaaSFY exported by main.js
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeDeveloperDashboard()
@@ -183,9 +183,12 @@ function editSaas(saasId) {
   document.getElementById("saasCategory").value = saas.category
   document.getElementById("saasUrl").value = saas.url
   document.getElementById("saasDescription").value = saas.description
+  document.getElementById("saasShortDescription").value = saas.shortDescription || ""
   document.getElementById("saasIntegration").value = saas.integration
   document.getElementById("saasPlan").value = saas.plan
+  document.getElementById("saasLogo").value = saas.logo || ""
   document.getElementById("saasIcon").value = saas.icon || ""
+  document.getElementById("saasImages").value = (saas.images || []).join("\n")
 
   modal.classList.add("active")
 
@@ -208,9 +211,15 @@ function handleSaasSubmit(e) {
     category: document.getElementById("saasCategory").value,
     url: document.getElementById("saasUrl").value,
     description: document.getElementById("saasDescription").value,
+    shortDescription: document.getElementById("saasShortDescription").value || "",
     integration: document.getElementById("saasIntegration").value,
     plan: document.getElementById("saasPlan").value,
+    logo: document.getElementById("saasLogo").value || null,
     icon: document.getElementById("saasIcon").value || null,
+    images: (document.getElementById("saasImages").value || "")
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(Boolean),
     developer: currentUser.email,
   }
 
