@@ -1548,6 +1548,7 @@ body {
   border-radius: var(--border-radius);
   padding: 2rem;
   box-shadow: var(--shadow-lg);
+  max-height: 80%;
 }
 
 .auth-header {

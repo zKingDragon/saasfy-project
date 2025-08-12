@@ -18,6 +18,9 @@ function initializeApp() {
   // Initialize sample data if not exists
   initializeSampleData()
 
+  // Run lightweight migrations (ex: atualizar imagens reais do Canva)
+  runMigrations()
+
   // Update UI based on authentication status
   updateAuthUI()
 
@@ -107,12 +110,13 @@ function initializeSampleData() {
         url: "https://notion.so",
         category: "productivity",
         plan: "free",
-        logo: "/placeholder.svg?height=80&width=80",
+        // Logo real do Figma
+        logo: "assets/img/figma.png",
+        // Screenshots reais disponíveis (figma1 a figma3)
         images: [
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
+          "assets/img/figma1.png",
+          "assets/img/figma2.png",
+            "assets/img/figma3.png",
         ],
         features: [
           {
@@ -250,12 +254,16 @@ function initializeSampleData() {
         url: "https://canva.com",
         category: "design",
         plan: "free",
-        logo: "/placeholder.svg?height=80&width=80",
+        // Logo real do Canva armazenada em assets/img
+        logo: "assets/img/canva.png",
+        // Screenshots reais (atualmente disponíveis: canva1, canva3, canva4, canva5)
+        // Se adicionar canva2.png depois, basta incluir aqui mantendo a ordem desejada
         images: [
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
-          "/placeholder.svg?height=400&width=600",
+          "assets/img/canva1.png",
+          // "assets/img/canva2.png", // (arquivo ausente no diretório no momento)
+          "assets/img/canva3.png",
+          "assets/img/canva4.png",
+          "assets/img/canva5.png",
         ],
         features: [
           {
@@ -694,6 +702,56 @@ function getRandomSaas() {
 function saveSaas(saasData) {
   localStorage.setItem("saasData", JSON.stringify(saasData))
   allSaas = saasData
+}
+
+// Lightweight data migrations
+function runMigrations() {
+  try {
+    const saasData = getAllSaas()
+    let changed = false
+    saasData.forEach((s) => {
+      if (s.name === "Canva") {
+        // Se ainda estiver usando placeholder, substitui por imagens reais disponíveis
+        const isPlaceholderLogo = s.logo && s.logo.startsWith("/placeholder.svg")
+        if (isPlaceholderLogo) {
+          s.logo = "assets/img/canva.png"
+          changed = true
+        }
+        // Atualiza screenshots se forem placeholders
+        if (Array.isArray(s.images) && s.images.length && s.images.every((img) => img.startsWith("/placeholder.svg"))) {
+          s.images = [
+            "assets/img/canva1.png",
+            // "assets/img/canva2.png", // poderá ser adicionado quando o arquivo existir
+            "assets/img/canva3.png",
+            "assets/img/canva4.png",
+            "assets/img/canva5.png",
+          ]
+          changed = true
+        }
+      }
+      if (s.name === "Figma") {
+        const isPlaceholderLogo = s.logo && s.logo.startsWith("/placeholder.svg")
+        if (isPlaceholderLogo) {
+          s.logo = "assets/img/figma.png"
+          changed = true
+        }
+        if (Array.isArray(s.images) && s.images.length && s.images.every((img) => img.startsWith("/placeholder.svg"))) {
+          s.images = [
+            "assets/img/figma1.png",
+            "assets/img/figma2.png",
+            "assets/img/figma3.png",
+          ]
+          changed = true
+        }
+      }
+    })
+    if (changed) {
+      saveSaas(saasData)
+      // Não exibe notificação para não poluir UI; poderia logar silenciosamente
+    }
+  } catch (e) {
+    console.warn("Migration error", e)
+  }
 }
 
 // Create a new SaaS entry

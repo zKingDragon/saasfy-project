@@ -67,13 +67,11 @@
                 <!-- SaaS Images Gallery -->
                 <div class="saas-gallery">
                     <div class="gallery-main">
-                        <img src="/placeholder.svg?height=400&width=600" alt="SaaS Screenshot" id="mainImage">
+                        <!-- Main image será substituída via JS (primeira screenshot); fallback para logo -->
+                        <img src="assets/img/canva.png" alt="SaaS Screenshot" id="mainImage">
                     </div>
                     <div class="gallery-thumbnails" id="galleryThumbnails">
-                        <img src="/placeholder.svg?height=100&width=150" alt="Screenshot 1" class="thumbnail active" onclick="changeMainImage(this)">
-                        <img src="/placeholder.svg?height=100&width=150" alt="Screenshot 2" class="thumbnail" onclick="changeMainImage(this)">
-                        <img src="/placeholder.svg?height=100&width=150" alt="Screenshot 3" class="thumbnail" onclick="changeMainImage(this)">
-                        <img src="/placeholder.svg?height=100&width=150" alt="Screenshot 4" class="thumbnail" onclick="changeMainImage(this)">
+                        <!-- Thumbnails serão injetadas dinamicamente por loadGallery() -->
                     </div>
                 </div>
 
@@ -242,7 +240,7 @@
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closePremiumModal()">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="upgradeToPremium()">
-                    <i class="fas fa-crown"></i> Fazer Upgrade - R$ 29/mês
+                    <i class="fas fa-crown"></i> Fazer Upgrade - R$ 89/mês
                 </button>
             </div>
         </div>
