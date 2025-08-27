@@ -1201,3 +1201,39 @@ window.SaaSFY = {
   goToRandomSaas,
   showNotification,
 }
+// ...existing code...
+
+// Controle de acesso ao painel de desenvolvedor
+function redirectIfNotDeveloper() {
+  const user = window.SaaSFY.getCurrentUser();
+  const isDashboardDev = window.location.pathname.endsWith("dashboard-dev.html");
+  if (isDashboardDev && (!user || user.type !== "developer")) {
+    window.location.href = "dashboard-usuario.html";
+  }
+}
+
+// Exibe o menu correto para cada tipo de usuário
+function setupDashboardMenu() {
+  const dashboardLink = document.getElementById("dashboardLink");
+  if (!dashboardLink) return;
+  const currentUser = window.SaaSFY.getCurrentUser();
+  if (currentUser && currentUser.type === "developer") {
+    dashboardLink.href = "dashboard-dev.html";
+    dashboardLink.textContent = "Painel Desenvolvedor";
+    dashboardLink.style.display = "inline";
+  } else if (currentUser && currentUser.type === "user") {
+    dashboardLink.href = "dashboard-usuario.html";
+    dashboardLink.textContent = "Painel Usuário";
+    dashboardLink.style.display = "inline";
+  } else {
+    dashboardLink.style.display = "none";
+  }
+}
+
+// Inicialização global
+document.addEventListener("DOMContentLoaded", () => {
+  redirectIfNotDeveloper();
+  setupDashboardMenu();
+});
+
+// ...existing code...
