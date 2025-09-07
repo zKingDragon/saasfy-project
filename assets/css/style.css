@@ -2106,7 +2106,7 @@ body {
 
 .dashboard {
   padding: 4rem 0 6rem;
-  background: linear-gradient(180deg, rgba(187, 187, 192, 0.5), rgba(116, 116, 121, 0.85));
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: var(--text-color, #222);
 }
 
@@ -2119,7 +2119,7 @@ body {
   margin-bottom: 2rem;
   padding: 1.25rem 1.5rem;
   border-radius: 12px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35));
+  background: linear-gradient(90deg, rgba(96, 44, 156, 0.72), rgb(71, 48, 124));
   box-shadow: 0 8px 30px rgba(50, 50, 93, 0.06);
   backdrop-filter: blur(6px);
 }

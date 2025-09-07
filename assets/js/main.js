@@ -111,7 +111,7 @@ function initializeSampleData() {
         category: "productivity",
         plan: "free",
         // Logo real do Figma
-        logo: "assets/img/figma.png",
+        logo: "assets/img/notion.png",
         // Screenshots reais disponíveis (figma1 a figma3)
         images: [
           "assets/img/figma1.png",
@@ -208,7 +208,7 @@ function initializeSampleData() {
         url: "https://slack.com",
         category: "communication",
         plan: "free",
-        logo: "/placeholder.svg?height=80&width=80",
+        logo: "assets/img/slack.png",
         images: [
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
@@ -396,13 +396,14 @@ function initializeSampleData() {
         url: "https://github.com",
         category: "development",
         plan: "free",
-        logo: "/placeholder.svg?height=80&width=80",
+        logo: "assets/img/github.png",
         images: [
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
         ],
+        
         features: [
           {
             icon: "fas fa-code-branch",
@@ -442,7 +443,7 @@ function initializeSampleData() {
         url: "https://zoom.us",
         category: "communication",
         plan: "free",
-        logo: "/placeholder.svg?height=80&width=80",
+        logo: "assets/img/zoom.png",
         images: [
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
@@ -495,6 +496,7 @@ function initializeSampleData() {
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
         ],
+        logo: "assets/img/adobe-CC.png",
         features: [
           {
             icon: "fas fa-envelope",
@@ -580,7 +582,7 @@ function initializeSampleData() {
         url: "https://adobe.com/creativecloud",
         category: "design",
         plan: "pro",
-        logo: "/placeholder.svg?height=80&width=80",
+        logo: "assets/img/adobe-CC.png",
         images: [
           "/placeholder.svg?height=400&width=600",
           "/placeholder.svg?height=400&width=600",
@@ -704,6 +706,189 @@ function saveSaas(saasData) {
   allSaas = saasData
 }
 
+// Substitua inicialização antiga por esta versão assíncrona
+document.addEventListener("DOMContentLoaded", () => {
+  initializeApp()
+})
+
+async function initializeApp() {
+  // Check if user is logged in
+  currentUser = getCurrentUser()
+
+  // Initialize sample data if not exists
+  initializeSampleData()
+
+  // Run lightweight, universal migrations (aguarda probe de imagens)
+  await runMigrations()
+
+  // Update UI based on authentication status
+  updateAuthUI()
+
+  // Initialize mobile menu
+  initializeMobileMenu()
+
+  // Initialize dropdowns
+  initializeDropdowns()
+
+  // Controle de acesso e menu de dashboard
+  redirectIfNotDeveloper()
+  setupDashboardMenu()
+}
+// ...existing code...
+
+// Substitua a função runMigrations() antiga por esta versão universal/assíncrona
+async function runMigrations() {
+  try {
+    const saasData = getAllSaas()
+    let changed = false
+
+    const checkImage = (url) =>
+      new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => resolve(true)
+        img.onerror = () => resolve(false)
+        img.src = url + "?_=" + Date.now()
+      })
+
+    const slugify = (name) =>
+      String(name || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+
+    const tryLogoCandidates = async (name) => {
+      const slug = slugify(name)
+      const candidates = []
+      const exts = ["png", "jpg", "jpeg", "svg", "webp"]
+
+      exts.forEach((ext) => {
+        candidates.push(`assets/img/${slug}.${ext}`)
+        candidates.push(`assets/img/${slug}-logo.${ext}`)
+        candidates.push(`assets/img/${slug}_logo.${ext}`)
+        candidates.push(`assets/img/${slug.toLowerCase()}.${ext}`)
+      })
+
+      const plain = name.replace(/\s+/g, "-")
+      exts.forEach((ext) => {
+        candidates.push(`assets/img/${plain}.${ext}`)
+        candidates.push(`assets/img/${plain.toLowerCase()}.${ext}`)
+      })
+
+      for (const c of candidates) {
+        // eslint-disable-next-line no-await-in-loop
+        if (await checkImage(c)) return c
+      }
+      return null
+    }
+
+    const tryImagesCandidates = async (name, max = 4) => {
+      const slug = slugify(name)
+      const exts = ["png", "jpg", "jpeg", "webp"]
+      const found = []
+
+      for (let i = 1; i <= 8 && found.length < max; i++) {
+        const patterns = [`${slug}${i}`, `${slug}-${i}`, `${slug}_${i}`, `${slug}0${i}`]
+        for (const p of patterns) {
+          for (const ext of exts) {
+            const url = `assets/img/${p}.${ext}`
+            // eslint-disable-next-line no-await-in-loop
+            if (await checkImage(url)) {
+              found.push(url)
+              if (found.length >= max) break
+            }
+          }
+          if (found.length >= max) break
+        }
+      }
+
+      if (found.length === 0) {
+        for (let i = 1; i <= max; i++) {
+          for (const ext of exts) {
+            const url = `assets/img/${slug}-${i}.${ext}`
+            // eslint-disable-next-line no-await-in-loop
+            if (await checkImage(url)) {
+              found.push(url)
+              break
+            }
+          }
+        }
+      }
+
+      return found
+    }
+
+    for (const s of saasData) {
+      const logoMissing =
+        !s.logo ||
+        s.logo.length === 0 ||
+        s.logo.startsWith("/placeholder.svg") ||
+        s.logo.includes("placeholder")
+
+      if (logoMissing) {
+        // eslint-disable-next-line no-await-in-loop
+        const candidate = await tryLogoCandidates(s.name)
+        if (candidate) {
+          s.logo = candidate
+          changed = true
+        }
+      } else {
+        // validate existing logo path
+        // eslint-disable-next-line no-await-in-loop
+        if (!(await checkImage(s.logo))) {
+          // eslint-disable-next-line no-await-in-loop
+          const candidate = await tryLogoCandidates(s.name)
+          if (candidate) {
+            s.logo = candidate
+            changed = true
+          }
+        }
+      }
+
+      const imagesMissing =
+        !Array.isArray(s.images) ||
+        s.images.length === 0 ||
+        s.images.every((img) => !img || img.startsWith("/placeholder.svg") || img.includes("placeholder"))
+
+      if (imagesMissing) {
+        // eslint-disable-next-line no-await-in-loop
+        const imgs = await tryImagesCandidates(s.name, 4)
+        if (imgs.length > 0) {
+          s.images = imgs
+          changed = true
+        }
+      } else {
+        const validated = []
+        for (const img of s.images) {
+          // eslint-disable-next-line no-await-in-loop
+          if (img && !(await checkImage(img))) {
+            // eslint-disable-next-line no-await-in-loop
+            const imgs = await tryImagesCandidates(s.name, 4)
+            if (imgs.length > 0) {
+              validated.push(...imgs)
+              break
+            }
+            // skip broken image
+          } else if (img) {
+            validated.push(img)
+          }
+        }
+        if (validated.length && JSON.stringify(validated) !== JSON.stringify(s.images)) {
+          s.images = validated
+          changed = true
+        }
+      }
+    }
+
+    if (changed) {
+      saveSaas(saasData)
+    }
+  } catch (e) {
+    console.warn("Migration error", e)
+  }
+}
+
 // Lightweight data migrations
 function runMigrations() {
   try {
@@ -753,7 +938,6 @@ function runMigrations() {
     console.warn("Migration error", e)
   }
 }
-
 // Create a new SaaS entry
 function addSaas(data) {
   const saasData = getAllSaas()
