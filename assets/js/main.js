@@ -1421,3 +1421,73 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ...existing code...
+        const headerContainer = document.getElementById('header');
+        if (headerContainer) {
+            headerContainer.innerHTML = headerHTML;
+            // Inicializar funcionalidades do header após carregamento
+            initializeHeader();
+            // Atualiza o header para mostrar usuário logado
+            if (window.SaaSFY && typeof window.SaaSFY.updateAuthUI === 'function') {
+                window.SaaSFY.updateAuthUI();
+            }
+            // Reaplica listeners do dropdown do usuário logado
+            initializeUserDropdown();
+
+            // Ajusta link do botão "Dashboard" conforme tipo do usuário
+            // (usuário -> dashboard-usuario.html, developer -> dashboard-dev.html,
+            // não autenticado -> login com redirect para "dashboard")
+            try {
+              updateDashboardLink();
+            } catch (e) {
+              console.warn('Erro ao atualizar link Dashboard:', e);
+            }
+        }
+// ...existing code...
+
+// ...existing code...
+
+// Atualiza o href do botão Dashboard conforme o tipo de usuário
+function updateDashboardLink() {
+  const headerContainer = document.getElementById('header');
+  if (!headerContainer) return;
+
+  // procura âncora cujo texto/atributo indique Dashboard
+  const anchors = Array.from(headerContainer.querySelectorAll('a'));
+  const dashboardAnchor = anchors.find(a => {
+    const txt = (a.textContent || '').trim().toLowerCase();
+    const href = (a.getAttribute('href') || '').toLowerCase();
+    return txt.includes('dashboard') || href.includes('dashboard');
+  });
+
+  // se não achar, tenta por botão com data-action
+  const alternative = headerContainer.querySelector('[data-action="dashboard"]');
+  const anchor = dashboardAnchor || alternative;
+  if (!anchor) return;
+
+  const user = window.SaaSFY && typeof window.SaaSFY.getCurrentUser === 'function'
+    ? window.SaaSFY.getCurrentUser()
+    : null;
+
+  const userPath = 'dashboard-usuario.html';
+  const devPath = 'dashboard-dev.html';
+  const loginRedirect = 'login.html?redirect=dashboard';
+
+  if (user && user.type === 'developer') {
+    anchor.setAttribute('href', devPath);
+  } else if (user && user.type === 'user') {
+    anchor.setAttribute('href', userPath);
+  } else {
+    // não autenticado
+    anchor.setAttribute('href', loginRedirect);
+  }
+
+  // garante que se o usuário mudar durante a sessão (login/logout) o link atualize
+  // expõe um listener simples para o evento custom 'authChanged' (main.js pode disparar)
+  if (!window.__dashboardLinkAuthListener) {
+    window.__dashboardLinkAuthListener = () => {
+      try { updateDashboardLink(); } catch (e) { /* ignore */ }
+    };
+    window.addEventListener('authChanged', window.__dashboardLinkAuthListener);
+  }
+}
+// ...existing code...
